@@ -1,6 +1,6 @@
+import { UserRole } from "./user-role.enum";
+
 export class UserDto {
-  id: string;
   email: string;
-  createdAt: Date;
-  updatedAt: Date;
+  role: UserRole;
 }

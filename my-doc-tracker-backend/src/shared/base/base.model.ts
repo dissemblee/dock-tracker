@@ -10,10 +10,10 @@ import {
 export abstract class BaseModel<T extends {}> extends Model<T> {
   @PrimaryKey
   @Column({
-    type: DataType.UUID,
-    defaultValue: DataType.UUIDV4,
+    type: DataType.INTEGER,
+    autoIncrement: true,
   })
-  declare id: string;
+  declare id: number;
 
   @CreatedAt
   @Column(DataType.DATE)
