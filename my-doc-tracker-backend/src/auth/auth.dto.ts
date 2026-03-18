@@ -1,9 +1,10 @@
-import { IsEmail, IsString, MinLength, MaxLength, IsNotEmpty } from "class-validator";
 import { Transform } from "class-transformer";
+import { IsEmail, IsNotEmpty, IsString, MaxLength, MinLength } from "class-validator";
 
-export class CreateUserDto {
+export class AuthDto {
   @Transform(({ value }) => value.toLowerCase().trim())
   @IsEmail({}, { message: 'Некорректный email' })
+  @IsNotEmpty({ message: 'Email обязателен' })
   email: string;
 
   @IsString({ message: 'Пароль должен быть строкой' })
@@ -11,8 +12,4 @@ export class CreateUserDto {
   @MinLength(6, { message: 'Минимальная длина пароля 6 символов' })
   @MaxLength(100, { message: 'Слишком длинный пароль' })
   password: string;
-
-  @IsString({ message: 'Роль должна быть строкой' })
-  @IsNotEmpty({ message: 'Роль обязательна' })
-  role: string;
 }

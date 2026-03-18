@@ -1,10 +1,12 @@
-import { Column, DataType, Table } from "sequelize-typescript";
+import { BelongsTo, BelongsToMany, Column, DataType, ForeignKey, HasMany, Table } from "sequelize-typescript";
 import { BaseModel } from "src/shared/base/base.model";
+import { UserRole } from "./dto/user-role.enum";
+import { CompanyModel } from "src/company/company.model";
+import { DocumentModel } from "src/document/document.model";
 
 
 @Table({ tableName: 'users' })
 export class UserModel extends BaseModel<UserModel> {
-
   @Column({
     type: DataType.STRING,
     unique: true,
@@ -14,7 +16,7 @@ export class UserModel extends BaseModel<UserModel> {
       notEmpty: true,
     },
   })
-  declare email: string;
+  email: string;
 
   @Column({
     type: DataType.STRING,
@@ -24,5 +26,21 @@ export class UserModel extends BaseModel<UserModel> {
       notEmpty: true,
     },
   })
-  declare hashPassword: string;
+  password: string;
+
+  @Column({
+    type: DataType.ENUM(...Object.values(UserRole)),
+    allowNull: false,
+  })
+  role: UserRole;
+
+  @ForeignKey(() => CompanyModel)
+  @Column
+  companyId: number;
+
+  @BelongsTo(() => CompanyModel, 'companyId')
+  company: CompanyModel;
+
+  @HasMany(() => DocumentModel)
+  documents: DocumentModel[];
 }
