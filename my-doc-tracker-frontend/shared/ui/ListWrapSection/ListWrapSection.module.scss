@@ -1,0 +1,67 @@
+@use '../../styles/mixins' as *;
+@use '../../styles/variables' as *;
+
+.ListWrapSection {
+  @include glassCard;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  width: 100%;
+}
+
+.ListWrapSection__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 1px 0 rgba(0, 30, 80, 0.04);
+}
+
+.ListWrapSection__title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: rgba(8, 40, 90, 0.85);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.ListWrapSection__action {
+  flex-shrink: 0;
+}
+
+.ListWrapSection__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ListWrapSection__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 48px 20px;
+  color: rgba(10, 40, 80, 0.40);
+  animation: fadeUp 0.3s ease both;
+
+  span {
+    font-size: 2.2rem;
+    filter: grayscale(0.2);
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}

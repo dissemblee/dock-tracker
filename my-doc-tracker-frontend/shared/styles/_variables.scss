@@ -1,0 +1,59 @@
+// ==============================
+// Цвета
+// ==============================
+$primary-color: #c6cdff;
+$secondary-color: #383C7C;
+$dark-bg-color: #080A23;
+$light-bg-color: #FFFFFF;
+$text-color: #032a40;
+$block-color: #121337;
+$glass-border: rgba(130, 124, 124, 0.12);
+$glass-glow: 0 0 30px rgba(29, 51, 62, 0.3);
+
+// ==============================
+// value scale в rem
+// ==============================
+$value-0: 0rem;        // 0px
+$value-0_5: 0.125rem;  // 2px
+$value-1: 0.25rem;     // 4px
+$value-1_5: 0.375rem;  // 6px
+$value-2: 0.5rem;      // 8px
+$value-2_5: 0.625rem;  // 10px
+$value-3: 0.75rem;     // 12px
+$value-3_5: 0.875rem;  // 14px
+$value-4: 1rem;        // 16px
+$value-5: 1.25rem;     // 20px
+$value-6: 1.5rem;      // 24px
+$value-7: 1.75rem;     // 28px
+$value-8: 2rem;        // 32px
+$value-9: 2.25rem;     // 36px
+$value-10: 2.5rem;     // 40px
+$value-12: 3rem;       // 48px
+$value-14: 3.5rem;     // 56px
+$value-16: 4rem;       // 64px
+$value-20: 5rem;       // 80px
+$value-24: 6rem;       // 96px
+$value-28: 7rem;       // 112px
+$value-30: 7.5rem;     // 120px
+$value-32: 8rem;       // 128px
+$value-36: 9rem;       // 144px
+$value-40: 10rem;      // 160px
+$value-44: 11rem;      // 176px
+$value-48: 12rem;      // 192px
+$value-52: 13rem;      // 208px
+$value-56: 14rem;      // 224px
+$value-60: 15rem;      // 240px
+$value-64: 16rem;      // 256px
+
+// ==============================
+// Border radius
+// ==============================
+$rounded-none: 0rem;       // 0px
+$rounded-sm: 0.125rem;     // 2px
+$rounded: 0.25rem;         // 4px
+$rounded-md: 0.375rem;     // 6px
+$rounded-lg: 0.5rem;       // 8px
+$rounded-xl: 0.75rem;      // 12px
+$rounded-2xl: 1rem;        // 16px
+$rounded-3xl: 1.5rem;      // 24px
+$rounded-full: 9999px;     // полный круг

@@ -1,0 +1,21 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+@use "sass:color";
+
+.CliBlock__content {
+  @include cardInfoBase;
+  padding: $value-8 0 $value-9 $value-7;
+
+  h2 {
+    font-weight: 200;
+    padding-left: 0;
+    text-align: justify;
+    margin: $value-8 0 $value-2 0;
+  }
+  
+  p {
+    color: #A3A3A3;
+    padding-left: 0;
+    max-width: $value-64;
+  }
+}

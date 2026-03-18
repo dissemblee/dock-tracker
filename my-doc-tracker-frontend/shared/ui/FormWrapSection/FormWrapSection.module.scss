@@ -1,0 +1,122 @@
+@use '../../styles/mixins' as *;
+
+.FormWrapSection {
+  width: 50%;
+  @include glassCard;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  
+  @media (max-width: 1024px) { width: 70%; }
+  @media (max-width: 768px)  { width: 90%; padding: 16px; }
+  @media (max-width: 480px)  { width: 95%; }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.30);
+  box-shadow: 0 1px 0 rgba(0, 30, 80, 0.04);
+
+  margin-bottom: 4px;
+
+  @media (max-width: 480px) {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  h1 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: rgba(10, 30, 70, 0.85);
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+}
+
+
+.goBack {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 7px 14px;
+  border-radius: 60px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.01em;
+  color: rgba(10, 30, 70, 0.65);
+
+  background: rgba(255, 255, 255, 0.13);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 2px 8px rgba(0, 30, 80, 0.06);
+
+  svg {
+    font-size: 1rem;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.70);
+    color: rgba(10, 30, 70, 0.90);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      0 0 0 1.5px rgba(255, 255, 255, 0.75),
+      0 0 16px 4px rgba(90, 150, 255, 0.20),
+      0 4px 12px rgba(0, 30, 80, 0.08);
+
+    svg {
+      transform: translateX(-3px);
+    }
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.infoButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 1.1rem;
+  color: rgba(10, 30, 70, 0.55);
+
+  background: rgba(255, 255, 255, 0.13);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 2px 8px rgba(0, 30, 80, 0.06);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.70);
+    color: rgba(10, 30, 70, 0.85);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      0 0 0 1.5px rgba(255, 255, 255, 0.75),
+      0 0 16px 4px rgba(90, 150, 255, 0.20),
+      0 4px 12px rgba(0, 30, 80, 0.08);
+    transform: rotate(15deg);
+  }
+
+  &:active {
+    transform: rotate(15deg) scale(0.94);
+  }
+}

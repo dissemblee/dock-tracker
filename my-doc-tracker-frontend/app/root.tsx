@@ -8,7 +8,12 @@ import {
 } from "react-router";
 
 import type { Route } from "./+types/root";
-import "./app.css";
+import "../shared/styles/globals.scss"
+import { ReduxProviders } from "./provider/ReduxProvider";
+import { CookiesProvider } from "react-cookie"
+import { AuthProvider } from "./provider/AuthProvider";
+import { Background } from "shared/ui/TetrisBackground";
+import { GlassFilters } from "shared/ui/GlassFilters";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -33,7 +38,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
+        <CookiesProvider>
+          <ReduxProviders>
+            <AuthProvider>
+              <header>
+                Хедер
+              </header>
+              <Background />
+              <GlassFilters />
+              {children}
+            </AuthProvider>
+          </ReduxProviders>
+        </CookiesProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
