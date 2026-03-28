@@ -6,46 +6,54 @@ import { CreateCompanyDto } from './dto/create-company.dto';
 import { UserService } from 'src/user/user.service';
 import { UserRole } from 'src/user/dto/user-role.enum';
 import { UserModel } from 'src/user/user.model';
-import { Transaction, where } from 'sequelize';
 
 @Injectable()
-export class CompanyService extends BaseService<CompanyModel>{
+export class CompanyService extends BaseService<CompanyModel> {
   constructor(
     @InjectModel(CompanyModel) private companyModel: typeof CompanyModel,
-    private userService: UserService
+    private userService: UserService,
   ) {
     super(companyModel);
   }
 
-  async createWithUser (dto: CreateCompanyDto, userId: number): Promise<CompanyModel> {
+  async createWithUser(
+    dto: CreateCompanyDto,
+    userId: number,
+  ): Promise<CompanyModel> {
     const user = await this.userService.findOne(userId);
 
     if (!user) {
-      throw new NotFoundException("Пользователь не найден");
+      throw new NotFoundException('Пользователь не найден');
     }
 
     const company = await this.create(dto as any);
 
-    if(!company) {
-      throw new NotFoundException("Компания не создана");
+    if (!company) {
+      throw new NotFoundException('Компания не создана');
     }
 
-    await this.userService.update(userId, { companyId: company.id, role: UserRole.ADMIN });
+    await this.userService.update(userId, {
+      companyId: company.id,
+      role: UserRole.ADMIN,
+    });
 
     return company;
   }
 
-  async switchRoleToAdmin (companyId: number, userId: number): Promise<CompanyModel> {
+  async switchRoleToAdmin(
+    companyId: number,
+    userId: number,
+  ): Promise<CompanyModel> {
     const user = await this.userService.findOne(userId);
 
     if (!user) {
-      throw new NotFoundException("Пользователь не найден");
+      throw new NotFoundException('Пользователь не найден');
     }
 
     const company = await this.findOne(companyId);
 
-    if(!company) {
-      throw new NotFoundException("Компания не найдена");
+    if (!company) {
+      throw new NotFoundException('Компания не найдена');
     }
 
     await this.userService.update(userId, { role: UserRole.ADMIN });
@@ -58,14 +66,14 @@ export class CompanyService extends BaseService<CompanyModel>{
     const user = await this.userService.findOne(userId);
 
     if (!company) {
-      throw new NotFoundException("Компания не найдена");
+      throw new NotFoundException('Компания не найдена');
     }
 
     if (!user) {
-      throw new NotFoundException("Пользователь не найден");
+      throw new NotFoundException('Пользователь не найден');
     }
 
-    const userExists = company.users?.some(u => u.id === userId);
+    const userExists = company.users?.some((u) => u.id === userId);
     if (userExists) {
       return company;
     }
@@ -79,16 +87,19 @@ export class CompanyService extends BaseService<CompanyModel>{
     return company;
   }
 
-  async deleteToCompany(companyId: number, userId: number): Promise<CompanyModel> {
+  async deleteToCompany(
+    companyId: number,
+    userId: number,
+  ): Promise<CompanyModel> {
     const company = await this.findOne(companyId);
     const user = await this.userService.findOne(userId);
 
     if (!company) {
-      throw new NotFoundException("Компания не найдена");
+      throw new NotFoundException('Компания не найдена');
     }
 
     if (!user) {
-      throw new NotFoundException("Пользователь не найден");
+      throw new NotFoundException('Пользователь не найден');
     }
 
     if (!company.users) {
@@ -100,15 +111,15 @@ export class CompanyService extends BaseService<CompanyModel>{
     return company;
   }
 
-  async getMembers(companyId: number): Promise<CompanyModel > {
-    const companyMembers = await CompanyModel.findByPk(companyId, {
-      include: [UserModel]
+  async getMembers(companyId: number): Promise<CompanyModel> {
+    const companyMembers = await this.companyModel.findByPk(companyId, {
+      include: [UserModel],
     });
 
     if (!companyMembers) {
-      throw new NotFoundException("Компания не найдена");
+      throw new NotFoundException('Компания не найдена');
     }
 
-    return companyMembers
+    return companyMembers;
   }
 }

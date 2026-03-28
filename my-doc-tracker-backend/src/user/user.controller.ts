@@ -1,10 +1,23 @@
-import { Controller, Get, Req, UseGuards } from "@nestjs/common";
-import { UserService } from "./user.service";
-import { UserModel } from "./user.model";
-import { JwtAuthGuard } from "src/shared/jwt/jwt-auth.guard";
+import {
+  Controller,
+  Get,
+  Patch,
+  Post,
+  Param,
+  Body,
+  Req,
+  UseGuards,
+  ParseIntPipe,
+  NotFoundException,
+} from '@nestjs/common';
+import type { Request } from 'express';
+import { UserService } from './user.service';
+import { UserModel } from './user.model';
+import { JwtAuthGuard } from 'src/shared/jwt/jwt-auth.guard';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @UseGuards(JwtAuthGuard)
-@Controller(`users`)
+@Controller('user')
 export class UserController {
   constructor(private userService: UserService) {}
 
@@ -12,10 +25,53 @@ export class UserController {
   async getAllUsers(): Promise<UserModel[]> {
     return this.userService.findAll();
   }
-  
+
+  @Get(':id')
+  async getUserById(@Param('id', ParseIntPipe) id: number): Promise<UserModel> {
+    const user = await this.userService.findOne(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
   @Get('current')
   async getCurrentUser(@Req() req: Request): Promise<UserModel | null> {
-    const userId = (req as any).user.id;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const userId = (req as any).user.id as number;
     return this.userService.currentUser(userId);
+  }
+
+  @Patch(':id')
+  async updateUser(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserDto: UpdateUserDto,
+  ): Promise<UserModel> {
+    const user = await this.userService.findOne(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return this.userService.update(id, updateUserDto);
+  }
+
+  @Post('change-password')
+  async changePassword(
+    @Req() req: Request,
+    @Body() body: { currentPassword: string; newPassword: string },
+  ): Promise<{ result: { success: boolean } }> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const userId = (req as any).user.id as number;
+    const user = await this.userService.findOne(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const success = await this.userService.changePassword(
+      userId,
+      body.currentPassword,
+      body.newPassword,
+    );
+
+    return { result: { success } };
   }
 }

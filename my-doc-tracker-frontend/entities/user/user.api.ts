@@ -21,16 +21,16 @@ export const usersApi = baseApi.injectEndpoints({
       }),
 
       providesTags: (result) => {
-        const users = result?.result?.data;
+        const users = result?.data;
 
         if (!users) {
           return [{ type: "Users", id: "LIST" }];
         }
 
         return [
-          ...users.map(({ id }) => ({
+          ...users.map((user: { id: number }) => ({
             type: "Users" as const,
-            id,
+            id: user.id,
           })),
           { type: "Users" as const, id: "LIST" },
         ];

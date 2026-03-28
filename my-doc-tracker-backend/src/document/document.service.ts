@@ -17,6 +17,15 @@ import { CreateDocumentDto } from './dto/create-document.dto';
 import { UserService } from 'src/user/user.service';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 
+interface UploadedFile {
+  fieldname: string;
+  originalname: string;
+  encoding: string;
+  mimetype: string;
+  size: number;
+  buffer: Buffer;
+}
+
 @Injectable()
 export class DocumentService {
   constructor(
@@ -44,7 +53,7 @@ export class DocumentService {
     return doc;
   }
 
-  private async validateFile(file: Express.Multer.File) {
+  private async validateFile(file: UploadedFile) {
     if (!file) throw new BadRequestException('Файл не передан');
     if (!file.size) throw new BadRequestException('Файл пустой');
 
@@ -58,7 +67,7 @@ export class DocumentService {
     return detected;
   }
 
-  async create(dto: CreateDocumentDto, file: Express.Multer.File, userId: number) {
+  async create(dto: CreateDocumentDto, file: UploadedFile, userId: number) {
     const user = await this.userService.findOne(userId);
     if (!user) throw new BadRequestException('Пользователь не найден');
 
@@ -89,17 +98,32 @@ export class DocumentService {
           ...doc.toJSON(),
           status: this.calcStatus(doc.expiresAt, doc.notifyBefore),
         };
-      } catch (e) {
+      } catch {
         if (uploaded) await this.s3.delete(key);
         throw new InternalServerErrorException('Ошибка сохранения документа');
       }
     });
   }
 
+  async findOne(documentId: number, userId: number) {
+    const doc = await this.documentModel.findOne({
+      where: { id: documentId, userId },
+    });
+
+    if (!doc) {
+      throw new NotFoundException('Документ не найден');
+    }
+
+    return {
+      ...doc.toJSON(),
+      status: this.calcStatus(doc.expiresAt, doc.notifyBefore),
+    };
+  }
+
   async list(userId: number) {
     const docs = await this.documentModel.findAll({ where: { userId } });
 
-    return docs.map(d => ({
+    return docs.map((d) => ({
       ...d.toJSON(),
       status: this.calcStatus(d.expiresAt, d.notifyBefore),
     }));
@@ -116,7 +140,7 @@ export class DocumentService {
     };
   }
 
-  async replaceFile(documentId: number, file: Express.Multer.File, userId: number) {
+  async replaceFile(documentId: number, file: UploadedFile, userId: number) {
     const doc = await this.assertOwner(documentId, userId);
     const detected = await this.validateFile(file);
 
@@ -125,7 +149,7 @@ export class DocumentService {
 
     let uploaded = false;
 
-    await this.sequelize.transaction(async t => {
+    await this.sequelize.transaction(async (t) => {
       try {
         await this.s3.upload(newKey, file.buffer, detected.mime);
         uploaded = true;
@@ -141,7 +165,7 @@ export class DocumentService {
         );
 
         await this.s3.delete(oldKey);
-      } catch (e) {
+      } catch {
         if (uploaded) await this.s3.delete(newKey);
         throw new InternalServerErrorException('Ошибка замены файла');
       }
@@ -150,7 +174,15 @@ export class DocumentService {
     return doc;
   }
 
-  async getDownloadUrl(documentId: number, userId: number) {
+  async getDownloadUrl(
+    documentId: number,
+    userId: number,
+  ): Promise<{
+    url: string;
+    fileName: string;
+    mimeType: string;
+    size: number;
+  }> {
     const doc = await this.assertOwner(documentId, userId);
 
     const url = await this.s3.getSignedUrl(doc.fileKey, 60);
@@ -163,22 +195,22 @@ export class DocumentService {
     };
   }
 
-  async delete(documentId: number, userId: number) {
+  async delete(documentId: number, userId: number): Promise<void> {
     const doc = await this.assertOwner(documentId, userId);
 
-    await this.sequelize.transaction(async t => {
+    await this.sequelize.transaction(async (t) => {
       await doc.destroy({ transaction: t });
       await this.s3.delete(doc.fileKey);
     });
   }
 
-  async findExpiringToday() {
+  async findExpiringToday(): Promise<any[]> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     const docs = await this.documentModel.findAll();
 
-    return docs.filter(d => {
+    return docs.filter((d) => {
       const notify = new Date(d.expiresAt);
       notify.setDate(notify.getDate() - d.notifyBefore);
       notify.setHours(0, 0, 0, 0);

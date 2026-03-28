@@ -1,11 +1,14 @@
 import type { EntityDto, CursorResultDto, ResultDto } from "@shared/types/api";
 
 export interface UserDto extends EntityDto {
-  username: string;
-  email?: string;
+  id: number;
+  name: string;
+  email: string;
+  role: string;
 }
 
 export interface UserUpdateDto {
+  name?: string;
   email?: string;
 }
 

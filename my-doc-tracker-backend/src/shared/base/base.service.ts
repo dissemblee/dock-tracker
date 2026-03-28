@@ -5,10 +5,12 @@ export abstract class BaseService<T extends Model> {
   constructor(protected readonly model: ModelStatic<T>) {}
 
   async create(dto: any): Promise<T> {
-    return this.model.create({...dto});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    return this.model.create({ ...dto });
   }
 
   async findAll(options?: FindOptions): Promise<T[]> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     return this.model.findAll(options);
   }
 
@@ -18,7 +20,11 @@ export abstract class BaseService<T extends Model> {
     return entity;
   }
 
-  async update(id: number, dto: Partial<T>, transaction?: Transaction): Promise<T> {
+  async update(
+    id: number,
+    dto: Partial<T>,
+    transaction?: Transaction,
+  ): Promise<T> {
     const entity = await this.findOne(id);
     return entity.update(dto, { transaction });
   }

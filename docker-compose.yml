@@ -8,7 +8,7 @@ services:
       POSTGRES_DB: ${DB_NAME:-nest_db}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "${DB_PORT:-5433}:5432"
+      - "${DB_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -72,6 +72,50 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./my-doc-tracker-backend
+      dockerfile: Dockerfile
+    container_name: nest_backend
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: password
+      DB_NAME: nest_db
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      PORT: 3000
+      CORS_ORIGIN: http://localhost:5173
+      NODE_ENV: development
+    ports:
+      - "3000:3000"
+    networks:
+      - nest_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      s3:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./my-doc-tracker-frontend
+      dockerfile: Dockerfile
+    container_name: nest_frontend
+    environment:
+      PORT: 5173
+      HOST: 0.0.0.0
+      NODE_ENV: production
+      VITE_API_URL: http://localhost:3000
+    ports:
+      - "5173:5173"
+    networks:
+      - nest_network
+    depends_on:
+      - backend
     restart: unless-stopped
 
 networks:

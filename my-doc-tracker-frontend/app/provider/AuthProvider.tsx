@@ -1,4 +1,4 @@
-import { useAuth } from "features/hooks/use-auth"
+import { useAuth } from "@features/hooks/use-auth";
 import { createContext, useContext, type ReactNode } from "react"
 
 type AuthContextValue = ReturnType<typeof useAuth>

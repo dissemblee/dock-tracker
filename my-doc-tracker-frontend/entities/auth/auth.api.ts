@@ -7,7 +7,7 @@ export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     register: builder.mutation<SignUpResultDto, SignUpDto>({
       query: (data) => ({
-        url: `${ENDPOINT}/sign-up`,
+        url: `${ENDPOINT}/register`,
         method: "POST",
         body: data,
       }),
@@ -16,7 +16,7 @@ export const authApi = baseApi.injectEndpoints({
 
     login: builder.mutation<SignInResultDto, SignInDto>({
       query: (data) => ({
-        url: `${ENDPOINT}/sign-in`,
+        url: `${ENDPOINT}/login`,
         method: "POST",
         body: data,
       }),
@@ -24,17 +24,11 @@ export const authApi = baseApi.injectEndpoints({
 
     logout: builder.mutation<void, void>({
       query: () => ({
-        url: `${ENDPOINT}/sign-out`,
+        url: `${ENDPOINT}/logout`,
         method: "POST",
       }),
     }),
 
-    refresh: builder.mutation<SignInResultDto, void>({
-      query: () => ({
-        url: `${ENDPOINT}/refresh`,
-        method: "POST",
-      }),
-    }),
   }),
   overrideExisting: false,
 });
@@ -43,5 +37,4 @@ export const {
   useRegisterMutation,
   useLoginMutation,
   useLogoutMutation,
-  useRefreshMutation,
 } = authApi;

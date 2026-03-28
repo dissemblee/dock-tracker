@@ -1,6 +1,7 @@
 import { Body, Controller, Post, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthDto } from './auth.dto';
+import { LoginDto } from './auth.dto';
+import { RegisterDto } from './auth.dto';
 import type { Response } from 'express';
 
 @Controller('auth')
@@ -8,11 +9,8 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  async login(
-    @Body() dto: AuthDto,
-    @Res({ passthrough: true }) res: Response
-  ) {
-    const { accessToken } = await this.authService.login(dto);
+  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
+    const { accessToken, user } = await this.authService.login(dto);
 
     res.cookie('jwt', accessToken, {
       httpOnly: true,
@@ -21,15 +19,15 @@ export class AuthController {
       sameSite: 'lax',
     });
 
-    return { message: 'Успешный вход' };
+    return { message: 'Успешный вход', user };
   }
 
   @Post('register')
   async register(
-    @Body() dto: AuthDto,
-    @Res({ passthrough: true }) res: Response
+    @Body() dto: RegisterDto,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const { accessToken } = await this.authService.register(dto);
+    const { accessToken, user } = await this.authService.register(dto);
 
     res.cookie('jwt', accessToken, {
       httpOnly: true,
@@ -38,11 +36,11 @@ export class AuthController {
       sameSite: 'lax',
     });
 
-    return { message: 'Регистрация успешна' };
+    return { message: 'Регистрация успешна', user };
   }
 
   @Post('logout')
-  async logout(@Res({ passthrough: true }) res: Response) {
+  logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie('jwt');
     return { message: 'Выход выполнен' };
   }

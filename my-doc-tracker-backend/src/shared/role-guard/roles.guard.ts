@@ -1,4 +1,9 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
 @Injectable()
@@ -6,11 +11,16 @@ export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const requiredRole = this.reflector.get<string>('role', context.getHandler());
+    const requiredRole = this.reflector.get<string>(
+      'role',
+      context.getHandler(),
+    );
     if (!requiredRole) return true;
 
-    const request = context.switchToHttp().getRequest();
-    const user = request.user;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const user = context.switchToHttp().getRequest().user as
+      | { role?: string }
+      | undefined;
 
     if (!user) throw new ForbiddenException('Пользователь не авторизован');
 

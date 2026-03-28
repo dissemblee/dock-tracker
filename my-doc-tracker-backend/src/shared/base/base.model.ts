@@ -7,7 +7,7 @@ import {
   UpdatedAt,
 } from 'sequelize-typescript';
 
-export abstract class BaseModel<T extends {}> extends Model<T> {
+export abstract class BaseModel<T extends object> extends Model<T> {
   @PrimaryKey
   @Column({
     type: DataType.INTEGER,

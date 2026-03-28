@@ -1,6 +1,12 @@
-import { BelongsTo, Column, DataType, ForeignKey, Table } from "sequelize-typescript";
-import { BaseModel } from "src/shared/base/base.model";
-import { UserModel } from "src/user/user.model";
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  ForeignKey,
+  Table,
+} from 'sequelize-typescript';
+import { BaseModel } from 'src/shared/base/base.model';
+import { UserModel } from 'src/user/user.model';
 
 @Table({ tableName: 'document' })
 export class DocumentModel extends BaseModel<DocumentModel> {
@@ -13,7 +19,7 @@ export class DocumentModel extends BaseModel<DocumentModel> {
 
   @Column({ allowNull: false })
   title: string;
-  
+
   @Column({ type: DataType.DATE, allowNull: false })
   expiresAt: Date;
 

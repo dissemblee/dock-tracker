@@ -29,7 +29,9 @@ interface ApiArgsAxios<TData = any> {
  * Axios instance с правильными заголовками и withCredentials
  */
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:81/api/",
+  baseURL: typeof window !== 'undefined'
+    ? (import.meta.env.VITE_API_URL || "http://localhost:3000")
+    : (process.env.VITE_API_URL || "http://localhost:3000"),
   withCredentials: true,
   headers: {
     Accept: "application/json",
@@ -47,8 +49,9 @@ const axiosInstance = axios.create({
 export async function $api<TResponse = any, TData = any>(
   args: ApiArgsAxios<TData>
 ): Promise<AxiosResponse<TResponse>> {
-
   try {
+    const token = tokenStore.get();
+
     const response = await axiosInstance.request<TResponse>({
       url: args.id ? `${args.endPoint}/${args.id}` : args.endPoint,
       method: args.method,
@@ -57,14 +60,14 @@ export async function $api<TResponse = any, TData = any>(
       withCredentials: true,
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Barer"
-      }
-    })
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
 
-    return response
+    return response;
   } catch (e) {
-    console.error("Ошибка при запросе:", e)
-    throw e
+    console.error("Ошибка при запросе:", e);
+    throw e;
   }
 }
 
@@ -105,6 +108,6 @@ export const customBaseQuery: BaseQueryFn<
 export const baseApi = createApi({
   reducerPath: "baseApi",
   baseQuery: customBaseQuery,
-  tagTypes: ["Users", "Repositories", "Components", "Builds"],
+  tagTypes: ["Users", "Documents", "Reminders"],
   endpoints: () => ({}),
 });

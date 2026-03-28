@@ -1,4 +1,14 @@
-.react-router
-build
 node_modules
+npm-debug.log
 README.md
+.env
+.env.local
+.env.*.local
+.git
+.gitignore
+.dockerignore
+Dockerfile
+build
+dist
+.react-router
+*.md

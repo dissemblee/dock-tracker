@@ -1,10 +1,10 @@
-import { Column, DataType, HasMany, Table } from "sequelize-typescript";
-import { BaseModel } from "src/shared/base/base.model";
-import { UserModel } from "src/user/user.model";
+import { Column, DataType, HasMany, Table } from 'sequelize-typescript';
+import { BaseModel } from 'src/shared/base/base.model';
+import { UserModel } from 'src/user/user.model';
 
 @Table({ tableName: 'company' })
 export class CompanyModel extends BaseModel<CompanyModel> {
-  @Column({ 
+  @Column({
     type: DataType.STRING,
     unique: true,
     allowNull: false,

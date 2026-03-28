@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsNumber, IsString, MinLength, MaxLength, IsDate } from "class-validator";
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  MinLength,
+  MaxLength,
+  IsDate,
+} from 'class-validator';
 
 export class CreateDocumentDto {
   @IsNotEmpty({ message: 'Название документа обязательно' })
@@ -6,7 +13,7 @@ export class CreateDocumentDto {
   @MinLength(3, { message: 'Минимальная длина названия документа 3 символа' })
   @MaxLength(100, { message: 'Слишком длинное название документа' })
   title: string;
-  
+
   @IsDate({ message: 'Некорректная дата истечения срока действия' })
   @IsNotEmpty({ message: 'Дата истечения срока действия обязательна' })
   expiresAt: Date;

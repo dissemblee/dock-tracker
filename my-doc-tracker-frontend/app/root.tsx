@@ -12,8 +12,7 @@ import "../shared/styles/globals.scss"
 import { ReduxProviders } from "./provider/ReduxProvider";
 import { CookiesProvider } from "react-cookie"
 import { AuthProvider } from "./provider/AuthProvider";
-import { Background } from "shared/ui/TetrisBackground";
-import { GlassFilters } from "shared/ui/GlassFilters";
+import { Background, GlassFilters } from "@shared/ui";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },

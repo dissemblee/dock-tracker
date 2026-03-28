@@ -1,12 +1,28 @@
-import { BelongsTo, BelongsToMany, Column, DataType, ForeignKey, HasMany, Table } from "sequelize-typescript";
-import { BaseModel } from "src/shared/base/base.model";
-import { UserRole } from "./dto/user-role.enum";
-import { CompanyModel } from "src/company/company.model";
-import { DocumentModel } from "src/document/document.model";
-
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  ForeignKey,
+  HasMany,
+  Table,
+} from 'sequelize-typescript';
+import { BaseModel } from 'src/shared/base/base.model';
+import { UserRole } from './dto/user-role.enum';
+import { CompanyModel } from 'src/company/company.model';
+import { DocumentModel } from 'src/document/document.model';
 
 @Table({ tableName: 'users' })
 export class UserModel extends BaseModel<UserModel> {
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: true,
+      len: [2, 50],
+    },
+  })
+  name: string;
+
   @Column({
     type: DataType.STRING,
     unique: true,
@@ -22,7 +38,6 @@ export class UserModel extends BaseModel<UserModel> {
     type: DataType.STRING,
     allowNull: false,
     validate: {
-      len: [6, 20],
       notEmpty: true,
     },
   })
