@@ -39,22 +39,37 @@ export class UserService extends BaseService<UserModel> {
     currentPassword: string,
     newPassword: string,
   ): Promise<boolean> {
-    const user = await this.userModel.findByPk(userId);
-    if (!user) {
+    // Получаем пароль через raw query
+    const rawUser = await this.userModel.sequelize.query(
+      `SELECT password FROM users WHERE id = :id`,
+      { replacements: { id: userId }, type: QueryTypes.SELECT, plain: true }
+    ) as any;
+
+    if (!rawUser || !rawUser.password) {
       return false;
     }
 
     const isPasswordValid = await bcrypt.compare(
       currentPassword,
-      user.password,
+      rawUser.password,
     );
     if (!isPasswordValid) {
       return false;
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    user.password = hashedPassword;
-    await user.save();
+    
+    // Обновляем пароль через raw SQL запрос
+    await this.userModel.sequelize.query(
+      `UPDATE users SET password = :password, "updatedAt" = :updatedAt WHERE id = :id`,
+      { 
+        replacements: { 
+          password: hashedPassword, 
+          updatedAt: new Date(), 
+          id: userId 
+        } 
+      }
+    );
 
     return true;
   }

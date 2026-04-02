@@ -6,10 +6,12 @@ import {
   useUpdateUserMutation,
   useChangePasswordMutation,
 } from "@entities/user";
+import type { UserDto } from "@entities/user";
 import { useGetCurrentCompanyQuery } from "@entities/company";
 import {
   useGetDocumentsQuery,
   useGetDownloadUrlQuery,
+  useDeleteDocumentMutation,
 } from "@entities/document";
 import {
   useGetRemindersQuery,
@@ -17,6 +19,7 @@ import {
   useDeleteReminderMutation,
 } from "@entities/reminder";
 import { tokenStore } from "@shared/api/tokenStore";
+import { DocumentModal } from "@shared/ui/DocumentModal";
 import styles from "./ProfilePage.module.scss";
 
 interface ReminderFormData {
@@ -38,7 +41,7 @@ interface PasswordFormData {
 
 export function ProfilePage() {
   const { user: authUser, isAuthenticated, logout } = useAuth();
-  const { data: currentUser, isLoading: userLoading } = useGetCurrentUserQuery(undefined, {
+  const { data: currentUser, isLoading: userLoading, refetch: refetchUser } = useGetCurrentUserQuery(undefined, {
     skip: !isAuthenticated,
   });
   const { data: currentCompany } = useGetCurrentCompanyQuery();
@@ -62,19 +65,22 @@ export function ProfilePage() {
     confirmPassword: "",
   });
 
-  const [activeTab, setActiveTab] = useState<"overview" | "profile" | "password">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "documents" | "profile" | "password">("overview");
+  const [isEditing, setIsEditing] = useState(false);
   const [updateMessage, setUpdateMessage] = useState("");
   const [passwordMessage, setPasswordMessage] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [isDocumentModalOpen, setIsDocumentModalOpen] = useState(false);
 
   const [createReminder] = useCreateReminderMutation();
   const [deleteReminder] = useDeleteReminderMutation();
+  const [deleteDocument] = useDeleteDocumentMutation();
 
   const user = currentUser || authUser;
   const userId = user?.id || 0;
 
-  const { data: documents = [], isLoading: documentsLoading } =
-    useGetDocumentsQuery({ limit: 10, offset: 0 }, { skip: !userId });
+  const { data: documents = [], isLoading: documentsLoading, refetch } =
+    useGetDocumentsQuery({ limit: 100, offset: 0 }, { skip: !userId });
 
   const { data: reminders = [], isLoading: remindersLoading } =
     useGetRemindersQuery({ userId }, { skip: !userId });
@@ -89,7 +95,7 @@ export function ProfilePage() {
 
   const handleLogout = async () => {
     await logout();
-    window.location.href = "/auth";
+    window.location.href = "/";
   };
 
   const handleAddReminder = async (e: React.FormEvent) => {
@@ -119,17 +125,44 @@ export function ProfilePage() {
     }
   };
 
+  const handleDeleteDocument = async (id: number) => {
+    if (confirm("Вы уверены, что хотите удалить этот документ?")) {
+      try {
+        await deleteDocument({ id }).unwrap();
+      } catch (error) {
+        console.error("Ошибка удаления документа:", error);
+      }
+    }
+  };
+
+  const handleDocumentModalSuccess = () => {
+    refetch();
+  };
+
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userId) return;
 
     try {
-      await updateUser({ id: userId, data: profileForm }).unwrap();
+      const result = await updateUser({ id: userId, data: profileForm }).unwrap();
       setUpdateMessage("Профиль обновлён!");
+      setIsEditing(false);
+      
+      // Обновляем данные пользователя в хуке useAuth
+      if (result) {
+        const updatedUser = {
+          ...user,
+          name: result.name || user?.name,
+          email: result.email || user?.email,
+        } as UserDto;
+        tokenStore.set(JSON.stringify(updatedUser));
+      }
+      
+      await refetchUser();
       setTimeout(() => setUpdateMessage(""), 3000);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Ошибка обновления:", error);
-      setUpdateMessage("Ошибка при обновлении профиля");
+      setUpdateMessage(error.data?.message || "Ошибка при обновлении профиля");
       setTimeout(() => setUpdateMessage(""), 3000);
     }
   };
@@ -152,12 +185,31 @@ export function ProfilePage() {
         currentPassword: passwordForm.currentPassword,
         newPassword: passwordForm.newPassword,
       }).unwrap();
-      setPasswordMessage("Пароль успешно изменён!");
-      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
-      setTimeout(() => setPasswordMessage(""), 3000);
-      setPasswordError("");
+      
+      // Очищаем все данные аутентификации
+      tokenStore.clear();
+      
+      // Перенаправляем на страницу авторизации
+      setPasswordMessage("Пароль успешно изменён! Выполняется выход...");
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1500);
     } catch (error: any) {
       setPasswordError(error.data?.message || "Ошибка при смене пароля");
+    }
+  };
+
+  const handleStartEditing = () => {
+    if (user) {
+      setProfileForm({ name: user.name, email: user.email });
+    }
+    setIsEditing(true);
+  };
+
+  const handleCancelEditing = () => {
+    setIsEditing(false);
+    if (user) {
+      setProfileForm({ name: user.name, email: user.email });
     }
   };
 
@@ -213,7 +265,7 @@ export function ProfilePage() {
   };
 
   if (!isAuthenticated) {
-    window.location.href = "/auth";
+    window.location.href = "/";
     return null;
   }
 
@@ -249,12 +301,13 @@ export function ProfilePage() {
             Обзор
           </button>
           <button
-            onClick={() => {
-              setActiveTab("profile");
-              if (user) {
-                setProfileForm({ name: user.name, email: user.email });
-              }
-            }}
+            onClick={() => setActiveTab("documents")}
+            className={`${styles.tab} ${activeTab === "documents" ? styles.tabActive : ""}`}
+          >
+            Документы
+          </button>
+          <button
+            onClick={() => setActiveTab("profile")}
             className={`${styles.tab} ${activeTab === "profile" ? styles.tabActive : ""}`}
           >
             Профиль
@@ -288,52 +341,6 @@ export function ProfilePage() {
                       <span className={styles.statusBadge}>
                         {getStatusLabel(doc.status)}
                       </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-
-            {/* Блок "Мои документы" */}
-            <section className={styles.section}>
-              <div className={styles.sectionHeader}>
-                <h2 className={styles.sectionTitle}>Мои документы</h2>
-                <Link to="/documents" className={styles.allLink}>
-                  Все документы →
-                </Link>
-              </div>
-              {documentsLoading ? (
-                <p className={styles.loadingText}>Загрузка документов...</p>
-              ) : documents.length === 0 ? (
-                <p className={styles.emptyText}>У вас пока нет документов</p>
-              ) : (
-                <div className={styles.documentsGrid}>
-                  {documents.slice(0, 6).map((doc) => (
-                    <div key={doc.id} className={styles.documentCard}>
-                      <div className={styles.docHeader}>
-                        <h3 className={styles.docTitle}>{doc.title}</h3>
-                        <span
-                          className={`${styles.statusBadge} ${styles[doc.status.toLowerCase()]}`}
-                        >
-                          {getStatusLabel(doc.status)}
-                        </span>
-                      </div>
-                      <div className={styles.docInfo}>
-                        <p className={styles.docDetail}>
-                          Срок действия: {formatDate(doc.expiresAt)}
-                        </p>
-                        <p className={styles.docDetail}>
-                          Размер: {formatFileSize(doc.size)}
-                        </p>
-                        <p className={styles.docDetail}>
-                          Напоминание за {doc.notifyBefore} дн.
-                        </p>
-                      </div>
-                      <div className={styles.docActions}>
-                        <Link to={`/documents/${doc.id}`} className={styles.docButton}>
-                          Просмотр
-                        </Link>
-                      </div>
                     </div>
                   ))}
                 </div>
@@ -418,63 +425,142 @@ export function ProfilePage() {
           </>
         )}
 
+        {activeTab === "documents" && (
+          <section className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>Мои документы</h2>
+              <button onClick={() => setIsDocumentModalOpen(true)} className={styles.addButton}>
+                + Добавить документ
+              </button>
+            </div>
+
+            <DocumentModal
+              isOpen={isDocumentModalOpen}
+              onClose={() => setIsDocumentModalOpen(false)}
+              onSuccess={handleDocumentModalSuccess}
+            />
+
+            {documentsLoading ? (
+              <p className={styles.loadingText}>Загрузка документов...</p>
+            ) : documents.length === 0 ? (
+              <p className={styles.emptyText}>У вас пока нет документов</p>
+            ) : (
+              <div className={styles.documentsGrid}>
+                {documents.map((doc) => (
+                  <div key={doc.id} className={styles.documentCard}>
+                    <div className={styles.docHeader}>
+                      <h3 className={styles.docTitle}>{doc.title}</h3>
+                      <span
+                        className={`${styles.statusBadge} ${styles[doc.status.toLowerCase()]}`}
+                      >
+                        {getStatusLabel(doc.status)}
+                      </span>
+                    </div>
+                    <div className={styles.docInfo}>
+                      <p className={styles.docDetail}>
+                        Срок действия: {formatDate(doc.expiresAt)}
+                      </p>
+                      <p className={styles.docDetail}>
+                        Размер: {formatFileSize(doc.size)}
+                      </p>
+                      <p className={styles.docDetail}>
+                        Напоминание за {doc.notifyBefore} дн.
+                      </p>
+                    </div>
+                    <div className={styles.docActions}>
+                      <Link to={`/documents/${doc.id}`} className={styles.docButton}>
+                        Просмотр
+                      </Link>
+                      <button
+                        onClick={() => handleDeleteDocument(doc.id)}
+                        className={`${styles.docButton} ${styles.deleteDocButton}`}
+                      >
+                        Удалить
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
         {activeTab === "profile" && (
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Редактирование профиля</h2>
+            <h2 className={styles.sectionTitle}>Профиль пользователя</h2>
 
             {updateMessage && (
               <div className={styles.successMessage}>{updateMessage}</div>
             )}
 
-            <form onSubmit={handleProfileUpdate} className={styles.profileForm}>
-              <div className={styles.formGroup}>
-                <label htmlFor="name" className={styles.label}>
-                  Имя
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  value={profileForm.name}
-                  onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-                  className={styles.formInputFull}
-                  minLength={2}
-                  maxLength={50}
-                />
+            <div className={styles.profileInfo}>
+              <div className={styles.infoRow}>
+                <span className={styles.infoLabel}>Имя:</span>
+                <span className={styles.infoValue}>{user?.name || "Не указано"}</span>
               </div>
 
-              <div className={styles.formGroup}>
-                <label htmlFor="email" className={styles.label}>
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  value={profileForm.email}
-                  onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-                  className={styles.formInputFull}
-                />
+              <div className={styles.infoRow}>
+                <span className={styles.infoLabel}>Email:</span>
+                <span className={styles.infoValue}>{user?.email || "Не указан"}</span>
               </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Текущая компания</label>
-                <div className={styles.companyInfo}>
-                  {currentCompany ? (
-                    <div>
-                      <span className={styles.companyName}>{currentCompany.name}</span>
-                      {currentCompany.inn && (
-                        <span className={styles.companyInn}>ИНН: {currentCompany.inn}</span>
-                      )}
-                    </div>
-                  ) : (
-                    <span className={styles.noCompany}>Нет компании</span>
-                  )}
-                </div>
+              <div className={styles.infoRow}>
+                <span className={styles.infoLabel}>Компания:</span>
+                <span className={styles.infoValue}>
+                  {currentCompany ? currentCompany.name : "Не задана"}
+                </span>
               </div>
 
-              <button type="submit" className={styles.submitButton}>
-                Сохранить изменения
+              <div className={styles.infoRow}>
+                <span className={styles.infoLabel}>Документов:</span>
+                <span className={styles.infoValue}>{documents.length}</span>
+              </div>
+            </div>
+
+            {!isEditing ? (
+              <button onClick={handleStartEditing} className={styles.editButton}>
+                Редактировать профиль
               </button>
-            </form>
+            ) : (
+              <form onSubmit={handleProfileUpdate} className={styles.profileForm}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="name" className={styles.label}>
+                    Имя
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    value={profileForm.name}
+                    onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                    className={styles.formInputFull}
+                    minLength={2}
+                    maxLength={50}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="email" className={styles.label}>
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    value={profileForm.email}
+                    onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                    className={styles.formInputFull}
+                  />
+                </div>
+
+                <div className={styles.formActions}>
+                  <button type="button" onClick={handleCancelEditing} className={styles.cancelButton}>
+                    Отмена
+                  </button>
+                  <button type="submit" className={styles.submitButton}>
+                    Сохранить изменения
+                  </button>
+                </div>
+              </form>
+            )}
           </section>
         )}
 

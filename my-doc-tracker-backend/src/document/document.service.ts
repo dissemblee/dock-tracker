@@ -86,7 +86,9 @@ export class DocumentService {
         const doc = await this.documentModel.create(
           {
             userId,
-            ...dto,
+            title: dto.title,
+            expiresAt: new Date(dto.expiresAt),
+            notifyBefore: dto.notifyBefore,
             fileKey: key,
             fileName: file.originalname,
             mimeType: detected.mime,

@@ -29,11 +29,7 @@ export class UserController {
 
   @Get(':id')
   async getUserById(@Param('id', ParseIntPipe) id: number): Promise<UserModel> {
-    const user = await this.userService.findOne(id);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    return user;
+    return this.userService.findOne(id);
   }
 
   @Get('current')
@@ -56,10 +52,6 @@ export class UserController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<UserModel> {
-    const user = await this.userService.findOne(id);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
     return this.userService.update(id, updateUserDto);
   }
 
@@ -70,10 +62,6 @@ export class UserController {
   ): Promise<{ result: { success: boolean } }> {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const userId = (req as any).user.id as number;
-    const user = await this.userService.findOne(userId);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
 
     const success = await this.userService.changePassword(
       userId,

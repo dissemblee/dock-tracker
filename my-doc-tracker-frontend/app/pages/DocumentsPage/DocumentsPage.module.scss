@@ -24,18 +24,25 @@
 
 .createButton {
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 0.95rem;
   font-weight: 600;
-  text-decoration: none;
+  cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 }
 
@@ -192,27 +199,28 @@
 }
 
 .actionButton {
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
   font-size: 0.85rem;
+  font-weight: 500;
   text-decoration: none;
   transition: all 0.2s;
   cursor: pointer;
   border: none;
-  background: #f0f0f0;
-  color: #333;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
 
   &:hover {
-    background: #e0e0e0;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
   }
 }
 
 .deleteButton {
-  background: #fee;
-  color: #c00;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 
   &:hover {
-    background: #fdd;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
   }
 }
 

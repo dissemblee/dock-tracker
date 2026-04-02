@@ -5,14 +5,12 @@ import { CompanyController } from './company.controller';
 import { CompanyService } from './company.service';
 import { AuthModule } from 'src/auth/auth.module';
 import { UsersModule } from 'src/user/user.module';
-import { CompanyMembersModule } from './members/company-members.module';
 
 @Module({
   imports: [
     SequelizeModule.forFeature([CompanyModel]),
     forwardRef(() => AuthModule),
     forwardRef(() => UsersModule),
-    CompanyMembersModule,
   ],
   controllers: [CompanyController],
   providers: [CompanyService],

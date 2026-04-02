@@ -16,8 +16,9 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_NAME:-nest_db}"]
       interval: 10s
-      timeout: 5s
-      retries: 5
+      timeout: 10s
+      retries: 20
+      start_period: 60s
     restart: unless-stopped
 
   createbuckets:
@@ -89,6 +90,9 @@ services:
       PORT: 3000
       CORS_ORIGIN: http://localhost:5173
       NODE_ENV: development
+      S3_ENDPOINT: http://s3:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
     ports:
       - "3000:3000"
     networks:

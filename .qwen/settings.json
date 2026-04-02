@@ -2,7 +2,15 @@
   "permissions": {
     "allow": [
       "Bash(mkdir *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(docker-compose *)",
+      "Bash(select-string *)",
+      "Bash(select-object *)",
+      "Bash(npm install)",
+      "Bash(docker logs *)",
+      "Bash(timeout *)",
+      "Bash(docker ps *)",
+      "Bash(docker start *)"
     ]
   },
   "$version": 3

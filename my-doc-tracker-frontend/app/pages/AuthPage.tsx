@@ -82,7 +82,8 @@ export function AuthPage() {
           email: formData.email,
           password: formData.password,
         }).unwrap();
-        tokenStore.set("authenticated");
+        // Токен уже установлен сервером в cookie
+        // Сохраняем только данные пользователя
         if (result.user) {
           tokenStore.set(JSON.stringify(result.user));
         }
@@ -92,7 +93,8 @@ export function AuthPage() {
           email: formData.email,
           password: formData.password,
         }).unwrap();
-        tokenStore.set("authenticated");
+        // Токен уже установлен сервером в cookie
+        // Сохраняем только данные пользователя
         if (result.user) {
           tokenStore.set(JSON.stringify(result.user));
         }

@@ -81,12 +81,18 @@ export const customBaseQuery: BaseQueryFn<
 > = async ({ url, method = "GET", body, params }) => {
   try {
     const token = tokenStore.get();
+    
+    // Отладка в development
+    if (import.meta.env.DEV && !token) {
+      console.warn('[RTK Query] JWT token not found for request:', url);
+    }
 
     const response = await axiosInstance.request({
       url,
       method,
       data: body,
       params,
+      withCredentials: true,
       headers: {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),

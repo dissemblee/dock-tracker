@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router";
 import { useGetDocumentsQuery, useDeleteDocumentMutation } from "@entities/document";
+import { DocumentModal } from "@shared/ui/DocumentModal";
 import styles from "./DocumentsPage.module.scss";
 
 type SortField = "title" | "expiresAt" | "uploadedAt" | "createdAt";
@@ -24,11 +25,12 @@ export function DocumentsPage() {
     sortOrder: "DESC",
   });
 
-  const { data: documents = [], isLoading, error } = useGetDocumentsQuery(queryParams);
+  const { data: documents = [], isLoading, error, refetch } = useGetDocumentsQuery(queryParams);
   const [deleteDocument] = useDeleteDocumentMutation();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -81,6 +83,10 @@ export function DocumentsPage() {
     }));
   };
 
+  const handleModalSuccess = () => {
+    refetch();
+  };
+
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
       ACTIVE: "Активен",
@@ -128,10 +134,16 @@ export function DocumentsPage() {
       <div className={styles.container}>
         <div className={styles.header}>
           <h1 className={styles.title}>Документы</h1>
-          <Link to="/documents/new" className={styles.createButton}>
-            + Создать документ
-          </Link>
+          <button onClick={() => setIsModalOpen(true)} className={styles.createButton}>
+            + Добавить документ
+          </button>
         </div>
+
+        <DocumentModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={handleModalSuccess}
+        />
 
         <div className={styles.filters}>
           <div className={styles.searchBox}>

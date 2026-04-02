@@ -4,7 +4,7 @@ import {
   IsString,
   MinLength,
   MaxLength,
-  IsDate,
+  IsISO8601,
 } from 'class-validator';
 
 export class CreateDocumentDto {
@@ -14,9 +14,10 @@ export class CreateDocumentDto {
   @MaxLength(100, { message: 'Слишком длинное название документа' })
   title: string;
 
-  @IsDate({ message: 'Некорректная дата истечения срока действия' })
   @IsNotEmpty({ message: 'Дата истечения срока действия обязательна' })
-  expiresAt: Date;
+  @IsString({ message: 'Дата должна быть строкой' })
+  @IsISO8601()
+  expiresAt: string;
 
   @IsNotEmpty({ message: 'Количество дней уведомления обязательно' })
   @IsNumber({}, { message: 'Количество дней уведомления должно быть числом' })

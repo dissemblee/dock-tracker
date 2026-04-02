@@ -4,10 +4,14 @@ import {
   useLogoutMutation,
   useRegisterMutation,
 } from "@entities/auth";
+import { usersApi } from "@entities/user";
 import { tokenStore } from "@shared/api/tokenStore";
 import type { UserDto } from "@entities/user/user.dto";
+import type { AppDispatch } from "@app/provider/store";
+import { useDispatch } from "react-redux";
 
 export const useAuth = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const [registerMutation, registerState] = useRegisterMutation();
   const [loginMutation, loginState] = useLoginMutation();
   const [logoutMutation, logoutState] = useLogoutMutation();
@@ -19,45 +23,83 @@ export const useAuth = () => {
 
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     if (typeof document === "undefined") return false;
-    return document.cookie.includes("isAuth=true") || !!tokenStore.get();
+    return tokenStore.isAuthenticated();
   });
 
+  // Проверяем токен при каждой отрисовке
   useEffect(() => {
-    if (!isAuthenticated) return;
+    const token = tokenStore.get();
+    const storedUser = tokenStore.getUser();
 
-    const init = async () => {
-      const token = tokenStore.get();
-      const storedUser = tokenStore.getUser();
-      if (!token) {
-        setIsAuthenticated(false);
-        setUser(null);
-      } else if (storedUser) {
-        setUser(storedUser);
+    if (token && storedUser) {
+      setUser(storedUser);
+      setIsAuthenticated(true);
+    } else if (!token) {
+      setUser(null);
+      setIsAuthenticated(false);
+    }
+  });
+
+  const loadUserProfile = useCallback(async () => {
+    try {
+      const result = await dispatch(usersApi.endpoints.getCurrentUser.initiate(undefined)).unwrap();
+      if (result) {
+        tokenStore.set(JSON.stringify(result));
+        setUser(result);
+        return result;
       }
-    };
-
-    init();
-  }, [isAuthenticated]);
+    } catch (error) {
+      console.error("Failed to load user profile:", error);
+    }
+    return null;
+  }, [dispatch]);
 
   const register = useCallback(
     async (data: Parameters<typeof registerMutation>[0]) => {
-      return await registerMutation(data).unwrap();
+      const result = await registerMutation(data).unwrap();
+      if (result.user) {
+        tokenStore.set(JSON.stringify(result.user));
+        // Если токен пришёл в JSON (dev режим), сохраняем его в cookie
+        if ('accessToken' in result && result.accessToken) {
+          document.cookie = `jwt=${result.accessToken}; path=/; max-age=900; SameSite=Lax`;
+        }
+        
+        // Загружаем актуальные данные профиля из БД
+        const userData = await loadUserProfile();
+        if (userData) {
+          setUser(userData);
+        } else {
+          setUser(result.user);
+        }
+        setIsAuthenticated(true);
+      }
+      return result;
     },
-    [registerMutation]
+    [registerMutation, loadUserProfile]
   );
 
   const login = useCallback(
     async (data: Parameters<typeof loginMutation>[0]) => {
       const result = await loginMutation(data).unwrap();
-      tokenStore.set("authenticated");
       if (result.user) {
         tokenStore.set(JSON.stringify(result.user));
-        setUser(result.user);
+        // Если токен пришёл в JSON (dev режим), сохраняем его в cookie
+        if ('accessToken' in result && result.accessToken) {
+          document.cookie = `jwt=${result.accessToken}; path=/; max-age=900; SameSite=Lax`;
+        }
+
+        // Загружаем актуальные данные профиля из БД
+        const userData = await loadUserProfile();
+        if (userData) {
+          setUser(userData);
+        } else {
+          setUser(result.user);
+        }
+        setIsAuthenticated(true);
       }
-      setIsAuthenticated(true);
       return result;
     },
-    [loginMutation]
+    [loginMutation, loadUserProfile]
   );
 
   const logout = useCallback(async () => {

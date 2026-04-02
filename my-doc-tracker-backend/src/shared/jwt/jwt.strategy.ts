@@ -26,7 +26,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
-        (req: any) => (req as { cookies?: { jwt?: string } })?.cookies?.jwt,
+        // 1. Пробуем извлечь из Authorization header (для API запросов)
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+        // 2. Пробуем извлечь из cookies (для браузерных запросов)
+        (req: any) => {
+          if (req?.cookies?.jwt) {
+            return req.cookies.jwt;
+          }
+          return null;
+        },
       ]),
       ignoreExpiration: false,
       secretOrKey: configService.get<string>('JWT_SECRET') || '',
@@ -35,7 +43,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: JwtPayload): Promise<JwtUser> {
     const user = await this.userService.currentUser(payload.id);
-    
+
     if (!user) {
       throw new Error('Пользователь не найден');
     }
