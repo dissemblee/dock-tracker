@@ -4,12 +4,22 @@ import type {
   UserChangePasswordDto,
   UserCursorResultDto,
   UserResultDto,
+  UserDto,
 } from "./user.dto";
 
 const ENDPOINT = "user";
 
 export const usersApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    getCurrentUser: builder.query<UserDto, void>({
+      query: () => ({
+        url: `${ENDPOINT}/current`,
+        method: "GET",
+      }),
+      providesTags: (result) =>
+        result ? [{ type: "Users", id: result.id }] : [{ type: "Users", id: "LIST" }],
+    }),
+
     getAllUsers: builder.query<
       UserCursorResultDto,
       { page?: number; perPage?: number }
@@ -77,9 +87,11 @@ export const usersApi = baseApi.injectEndpoints({
       invalidatesTags: [],
     }),
   }),
+  overrideExisting: false,
 });
 
 export const {
+  useGetCurrentUserQuery,
   useGetAllUsersQuery,
   useGetUserByIdQuery,
   useUpdateUserMutation,

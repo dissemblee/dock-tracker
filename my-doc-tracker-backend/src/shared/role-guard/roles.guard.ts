@@ -24,6 +24,10 @@ export class RolesGuard implements CanActivate {
 
     if (!user) throw new ForbiddenException('Пользователь не авторизован');
 
+    if (user.role === 'NO_ROLE') {
+      throw new ForbiddenException('У вас нет роли. Обратитесь к администратору.');
+    }
+
     if (user.role !== requiredRole) {
       throw new ForbiddenException('Нет доступа для вашей роли');
     }

@@ -14,6 +14,17 @@ export class CompanyModel extends BaseModel<CompanyModel> {
   })
   declare name: string;
 
+  @Column({
+    type: DataType.STRING,
+    unique: true,
+    allowNull: true,
+    validate: {
+      notEmpty: true,
+      len: [10, 15],
+    },
+  })
+  declare inn: string | null;
+
   @HasMany(() => UserModel, 'companyId')
   users: UserModel[];
 }

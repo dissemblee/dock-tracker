@@ -11,12 +11,15 @@ import {
   UseInterceptors,
   UseGuards,
   ParseIntPipe,
+  Req,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/shared/jwt/jwt-auth.guard';
 import { DocumentService } from './document.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
+import { DocumentQueryDto } from './dto/document-query.dto';
+import type { Request } from 'express';
 
 interface UploadedFile {
   fieldname: string;
@@ -37,31 +40,47 @@ export class DocumentController {
   async create(
     @UploadedFile() file: UploadedFile,
     @Body() createDocumentDto: CreateDocumentDto,
-    @Query('userId', ParseIntPipe) userId: number,
+    @Req() req: Request,
   ) {
-    return await this.documentService.create(createDocumentDto, file, userId);
+    const user = req.user as { id: number };
+    return await this.documentService.create(createDocumentDto, file, user.id);
   }
 
   @Get()
-  async findAll(@Query('userId', ParseIntPipe) userId: number) {
-    return await this.documentService.list(userId);
+  async findAll(
+    @Query() query: DocumentQueryDto,
+    @Req() req: Request,
+  ) {
+    const user = req.user as { id: number };
+    return await this.documentService.list(user.id, query);
   }
 
   @Get(':id')
   async findOne(
     @Param('id', ParseIntPipe) id: number,
-    @Query('userId', ParseIntPipe) userId: number,
+    @Req() req: Request,
   ) {
-    return await this.documentService.findOne(id, userId);
+    const user = req.user as { id: number };
+    return await this.documentService.findOne(id, user.id);
+  }
+
+  @Get(':id/image-url')
+  async getImageUrl(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: Request,
+  ) {
+    const user = req.user as { id: number };
+    return await this.documentService.getPresignedImageUrl(id, user.id);
   }
 
   @Put(':id/meta')
   async updateMeta(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateDocumentDto: UpdateDocumentDto,
-    @Query('userId', ParseIntPipe) userId: number,
+    @Req() req: Request,
   ) {
-    return await this.documentService.updateMeta(id, updateDocumentDto, userId);
+    const user = req.user as { id: number };
+    return await this.documentService.updateMeta(id, updateDocumentDto, user.id);
   }
 
   @Put(':id/file')
@@ -69,25 +88,28 @@ export class DocumentController {
   async replaceFile(
     @Param('id', ParseIntPipe) id: number,
     @UploadedFile() file: UploadedFile,
-    @Query('userId', ParseIntPipe) userId: number,
+    @Req() req: Request,
   ) {
-    return await this.documentService.replaceFile(id, file, userId);
+    const user = req.user as { id: number };
+    return await this.documentService.replaceFile(id, file, user.id);
   }
 
   @Get(':id/download-url')
   async getDownloadUrl(
     @Param('id', ParseIntPipe) id: number,
-    @Query('userId', ParseIntPipe) userId: number,
+    @Req() req: Request,
   ) {
-    return await this.documentService.getDownloadUrl(id, userId);
+    const user = req.user as { id: number };
+    return await this.documentService.getDownloadUrl(id, user.id);
   }
 
   @Delete(':id')
   async remove(
     @Param('id', ParseIntPipe) id: number,
-    @Query('userId', ParseIntPipe) userId: number,
+    @Req() req: Request,
   ) {
-    return await this.documentService.delete(id, userId);
+    const user = req.user as { id: number };
+    return await this.documentService.delete(id, user.id);
   }
 
   @Get('expiring/today')

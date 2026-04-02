@@ -12,10 +12,10 @@ export class UserService extends BaseService<UserModel> {
   }
 
   async findByEmail(email: string): Promise<UserModel | null> {
-    const user = await this.userModel.findOne({ 
+    const user = await this.userModel.findOne({
       where: { email }
     });
-    
+
     // Получаем пароль через getDataValue, т.к. поле может быть скрыто
     if (user && !user.password) {
       const rawUser = await this.userModel.sequelize.query(
@@ -26,7 +26,7 @@ export class UserService extends BaseService<UserModel> {
         Object.assign(user, { password: rawUser.password });
       }
     }
-    
+
     return user;
   }
 
@@ -57,5 +57,24 @@ export class UserService extends BaseService<UserModel> {
     await user.save();
 
     return true;
+  }
+
+  async findByEmailPartial(email: string): Promise<{ id: number; name: string; email: string; companyId: number | null }[]> {
+    const users = await this.userModel.findAll({
+      where: {
+        email: {
+          [require('sequelize').Op.iLike]: `%${email}%`,
+        },
+      },
+      attributes: ['id', 'name', 'email', 'companyId'],
+      limit: 10,
+    });
+
+    return users.map(u => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      companyId: u.companyId,
+    }));
   }
 }

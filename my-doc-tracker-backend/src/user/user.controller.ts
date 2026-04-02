@@ -9,6 +9,7 @@ import {
   UseGuards,
   ParseIntPipe,
   NotFoundException,
+  Query,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { UserService } from './user.service';
@@ -40,6 +41,14 @@ export class UserController {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const userId = (req as any).user.id as number;
     return this.userService.currentUser(userId);
+  }
+
+  @Get('search/by-email')
+  async searchByEmail(@Query('email') email: string): Promise<{ id: number; name: string; email: string; companyId: number | null }[]> {
+    if (!email || email.length < 2) {
+      return [];
+    }
+    return this.userService.findByEmailPartial(email);
   }
 
   @Patch(':id')

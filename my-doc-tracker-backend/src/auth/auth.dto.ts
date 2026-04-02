@@ -5,6 +5,8 @@ import {
   IsString,
   MaxLength,
   MinLength,
+  IsOptional,
+  IsBoolean,
 } from 'class-validator';
 
 export class LoginDto {
@@ -37,6 +39,16 @@ export class RegisterDto {
   @MinLength(6, { message: 'Минимальная длина пароля 6 символов' })
   @MaxLength(100, { message: 'Слишком длинный пароль' })
   password: string;
+
+  @IsOptional()
+  @IsBoolean()
+  createCompany?: boolean;
+
+  @IsOptional()
+  @IsString({ message: 'Название компании должно быть строкой' })
+  @MinLength(2, { message: 'Минимальная длина названия компании 2 символа' })
+  @MaxLength(100, { message: 'Максимальная длина названия компании 100 символов' })
+  companyName?: string;
 }
 
 export class AuthDto {

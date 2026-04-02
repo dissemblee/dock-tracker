@@ -7,6 +7,7 @@ import { CompanyModule } from './company/company.module';
 import { DocumentModule } from './document/document.module';
 import { SeedModule } from './seed/seed.module';
 import { ReminderModule } from './reminder/reminder.module';
+import { CompanyMembersModule } from './company/members/company-members.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { ReminderModule } from './reminder/reminder.module';
     AuthModule,
     UsersModule,
     CompanyModule,
+    CompanyMembersModule,
     SeedModule,
     ReminderModule,
   ],

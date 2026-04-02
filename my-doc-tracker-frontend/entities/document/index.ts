@@ -2,6 +2,8 @@ export type {
   DocumentDto,
   DocumentCreateDto,
   DocumentUpdateDto,
+  DocumentQueryDto,
+  DocumentImageUrlDto,
 } from "./document.dto";
 export {
   useGetDocumentsQuery,
@@ -10,5 +12,6 @@ export {
   useUpdateDocumentMutation,
   useDeleteDocumentMutation,
   useGetDownloadUrlQuery,
+  useGetImageUrlQuery,
   documentApi,
 } from "./document.api";

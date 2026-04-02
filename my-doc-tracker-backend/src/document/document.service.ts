@@ -8,6 +8,7 @@ import {
 import { InjectModel } from '@nestjs/sequelize';
 import { Transaction } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 
 import { DocumentModel } from './document.model';
 import { S3Service } from 'src/shared/s3/S3.service';
@@ -16,6 +17,7 @@ import { fileTypeFromBuffer } from 'file-type';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { UserService } from 'src/user/user.service';
 import { UpdateDocumentDto } from './dto/update-document.dto';
+import { DocumentQueryDto } from './dto/document-query.dto';
 
 interface UploadedFile {
   fieldname: string;
@@ -120,13 +122,32 @@ export class DocumentService {
     };
   }
 
-  async list(userId: number) {
-    const docs = await this.documentModel.findAll({ where: { userId } });
+  async list(userId: number, query: DocumentQueryDto) {
+    const { limit = 10, offset = 0, sortBy = 'createdAt', sortOrder = 'DESC', status, search } = query;
 
-    return docs.map((d) => ({
+    const where: any = { userId };
+
+    if (search) {
+      where.title = { [Op.iLike]: `%${search}%` };
+    }
+
+    const docs = await this.documentModel.findAll({
+      where,
+      limit,
+      offset,
+      order: [[sortBy, sortOrder]],
+    });
+
+    const documents = docs.map((d) => ({
       ...d.toJSON(),
       status: this.calcStatus(d.expiresAt, d.notifyBefore),
     }));
+
+    if (status) {
+      return documents.filter((d) => d.status === status);
+    }
+
+    return documents;
   }
 
   async updateMeta(documentId: number, dto: UpdateDocumentDto, userId: number) {
@@ -216,5 +237,18 @@ export class DocumentService {
       notify.setHours(0, 0, 0, 0);
       return notify.getTime() === today.getTime();
     });
+  }
+
+  async getPresignedImageUrl(documentId: number, userId: number): Promise<{ url: string }> {
+    const doc = await this.assertOwner(documentId, userId);
+
+    const isImage = doc.mimeType.startsWith('image/');
+    if (!isImage) {
+      throw new BadRequestException('Документ не является изображением');
+    }
+
+    const url = await this.s3.getSignedUrl(doc.fileKey, 60);
+
+    return { url };
   }
 }

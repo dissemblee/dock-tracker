@@ -13,3 +13,5 @@ export interface CursorResultDto<T> {
   cursor: string | null;
   hasMore: boolean;
 }
+
+export type ApiTagTypes = "Users" | "Documents" | "Reminders" | "Company" | "CompanyMembers";

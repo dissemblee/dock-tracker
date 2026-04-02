@@ -6,6 +6,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from 'src/shared/jwt/jwt.strategy';
+import { CompanyModule } from 'src/company/company.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { JwtStrategy } from 'src/shared/jwt/jwt.strategy';
         signOptions: { expiresIn: '15m' },
       }),
     }),
+    forwardRef(() => CompanyModule),
   ],
   providers: [AuthService, JwtStrategy],
   controllers: [AuthController],

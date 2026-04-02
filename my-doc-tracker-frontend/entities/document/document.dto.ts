@@ -25,3 +25,16 @@ export interface DocumentUpdateDto {
   expiresAt?: string;
   notifyBefore?: number;
 }
+
+export interface DocumentQueryDto {
+  limit?: number;
+  offset?: number;
+  sortBy?: "title" | "expiresAt" | "uploadedAt" | "createdAt";
+  sortOrder?: "ASC" | "DESC";
+  status?: "ACTIVE" | "EXPIRING" | "EXPIRED";
+  search?: string;
+}
+
+export interface DocumentImageUrlDto {
+  url: string;
+}

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { BaseService } from 'src/shared/base/base.service';
 import { CompanyModel } from './company.model';
 import { InjectModel } from '@nestjs/sequelize';
@@ -6,6 +6,7 @@ import { CreateCompanyDto } from './dto/create-company.dto';
 import { UserService } from 'src/user/user.service';
 import { UserRole } from 'src/user/dto/user-role.enum';
 import { UserModel } from 'src/user/user.model';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class CompanyService extends BaseService<CompanyModel> {
@@ -24,6 +25,24 @@ export class CompanyService extends BaseService<CompanyModel> {
 
     if (!user) {
       throw new NotFoundException('Пользователь не найден');
+    }
+
+    if (dto.inn) {
+      const existingCompanyWithInn = await this.companyModel.findOne({
+        where: { inn: dto.inn },
+      });
+
+      if (existingCompanyWithInn) {
+        throw new ConflictException('Компания с таким ИНН уже существует');
+      }
+    }
+
+    const existingCompanyWithName = await this.companyModel.findOne({
+      where: { name: dto.name },
+    });
+
+    if (existingCompanyWithName) {
+      throw new ConflictException('Компания с таким названием уже существует');
     }
 
     const company = await this.create(dto as any);
@@ -121,5 +140,46 @@ export class CompanyService extends BaseService<CompanyModel> {
     }
 
     return companyMembers;
+  }
+
+  async update(
+    id: number,
+    dto: Partial<CreateCompanyDto>,
+  ): Promise<CompanyModel> {
+    const company = await this.findOne(id);
+
+    if (!company) {
+      throw new NotFoundException('Компания не найдена');
+    }
+
+    if (dto.inn && dto.inn !== company.inn) {
+      const existingCompanyWithInn = await this.companyModel.findOne({
+        where: {
+          inn: dto.inn,
+          id: { [Op.ne]: id },
+        },
+      });
+
+      if (existingCompanyWithInn) {
+        throw new ConflictException('Компания с таким ИНН уже существует');
+      }
+    }
+
+    if (dto.name && dto.name !== company.name) {
+      const existingCompanyWithName = await this.companyModel.findOne({
+        where: {
+          name: dto.name,
+          id: { [Op.ne]: id },
+        },
+      });
+
+      if (existingCompanyWithName) {
+        throw new ConflictException('Компания с таким названием уже существует');
+      }
+    }
+
+    await company.update(dto);
+
+    return company;
   }
 }

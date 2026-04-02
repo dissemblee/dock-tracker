@@ -1,15 +1,21 @@
 import { baseApi } from "@shared/api";
-import type { DocumentDto, DocumentCreateDto, DocumentUpdateDto } from "./document.dto";
+import type {
+  DocumentDto,
+  DocumentCreateDto,
+  DocumentUpdateDto,
+  DocumentQueryDto,
+  DocumentImageUrlDto,
+} from "./document.dto";
 
 const ENDPOINT = "documents";
 
 export const documentApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getDocuments: builder.query<DocumentDto[], { userId: number }>({
-      query: ({ userId }) => ({
+    getDocuments: builder.query<DocumentDto[], DocumentQueryDto>({
+      query: (params) => ({
         url: ENDPOINT,
         method: "GET",
-        params: { userId },
+        params,
       }),
       providesTags: (result) =>
         result
@@ -20,21 +26,20 @@ export const documentApi = baseApi.injectEndpoints({
           : [{ type: "Documents", id: "LIST" }],
     }),
 
-    getDocument: builder.query<DocumentDto, { id: number; userId: number }>({
-      query: ({ id, userId }) => ({
+    getDocument: builder.query<DocumentDto, number>({
+      query: (id) => ({
         url: `${ENDPOINT}/${id}`,
         method: "GET",
-        params: { userId },
       }),
-      providesTags: (_result, _error, { id }) => [{ type: "Documents", id }],
+      providesTags: (_result, _error, documentId) => [{ type: "Documents", id: documentId }],
     }),
 
     createDocument: builder.mutation<
       DocumentDto,
-      { data: FormData; userId: number }
+      { data: FormData }
     >({
-      query: ({ data, userId }) => ({
-        url: `${ENDPOINT}?userId=${userId}`,
+      query: ({ data }) => ({
+        url: ENDPOINT,
         method: "POST",
         body: data,
       }),
@@ -43,10 +48,10 @@ export const documentApi = baseApi.injectEndpoints({
 
     updateDocument: builder.mutation<
       DocumentDto,
-      { id: number; data: DocumentUpdateDto; userId: number }
+      { id: number; data: DocumentUpdateDto }
     >({
-      query: ({ id, data, userId }) => ({
-        url: `${ENDPOINT}/${id}/meta?userId=${userId}`,
+      query: ({ id, data }) => ({
+        url: `${ENDPOINT}/${id}/meta`,
         method: "PUT",
         body: data,
       }),
@@ -58,10 +63,10 @@ export const documentApi = baseApi.injectEndpoints({
 
     deleteDocument: builder.mutation<
       void,
-      { id: number; userId: number }
+      { id: number }
     >({
-      query: ({ id, userId }) => ({
-        url: `${ENDPOINT}/${id}?userId=${userId}`,
+      query: ({ id }) => ({
+        url: `${ENDPOINT}/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: [{ type: "Documents", id: "LIST" }],
@@ -69,10 +74,20 @@ export const documentApi = baseApi.injectEndpoints({
 
     getDownloadUrl: builder.query<
       { url: string; fileName: string; mimeType: string; size: number },
-      { id: number; userId: number }
+      number
     >({
-      query: ({ id, userId }) => ({
-        url: `${ENDPOINT}/${id}/download-url?userId=${userId}`,
+      query: (id) => ({
+        url: `${ENDPOINT}/${id}/download-url`,
+        method: "GET",
+      }),
+    }),
+
+    getImageUrl: builder.query<
+      DocumentImageUrlDto,
+      number
+    >({
+      query: (id) => ({
+        url: `${ENDPOINT}/${id}/image-url`,
         method: "GET",
       }),
     }),
@@ -87,4 +102,5 @@ export const {
   useUpdateDocumentMutation,
   useDeleteDocumentMutation,
   useGetDownloadUrlQuery,
+  useGetImageUrlQuery,
 } = documentApi;
