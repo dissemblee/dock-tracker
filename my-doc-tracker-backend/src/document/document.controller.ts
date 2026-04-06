@@ -12,6 +12,7 @@ import {
   UseGuards,
   ParseIntPipe,
   Req,
+  Res,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/shared/jwt/jwt-auth.guard';
@@ -19,7 +20,7 @@ import { DocumentService } from './document.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 import { DocumentQueryDto } from './dto/document-query.dto';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 
 interface UploadedFile {
   fieldname: string;
@@ -71,6 +72,19 @@ export class DocumentController {
   ) {
     const user = req.user as { id: number };
     return await this.documentService.getPresignedImageUrl(id, user.id);
+  }
+
+  @Get(':id/image')
+  async getImage(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    const user = req.user as { id: number };
+    const { buffer, contentType } = await this.documentService.getImageFile(id, user.id);
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.send(buffer);
   }
 
   @Put(':id/meta')

@@ -21,7 +21,7 @@ export class UserModel extends BaseModel<UserModel> {
       len: [2, 50],
     },
   })
-  name: string;
+  declare name: string;
 
   @Column({
     type: DataType.STRING,
@@ -32,7 +32,7 @@ export class UserModel extends BaseModel<UserModel> {
       notEmpty: true,
     },
   })
-  email: string;
+  declare email: string;
 
   @Column({
     type: DataType.STRING,
@@ -41,21 +41,21 @@ export class UserModel extends BaseModel<UserModel> {
       notEmpty: true,
     },
   })
-  password: string;
+  declare password: string;
 
   @Column({
     type: DataType.ENUM(...Object.values(UserRole)),
     allowNull: false,
   })
-  role: UserRole;
+  declare role: UserRole;
 
   @ForeignKey(() => CompanyModel)
   @Column
-  companyId: number;
+  declare companyId: number;
 
   @BelongsTo(() => CompanyModel, 'companyId')
-  company: CompanyModel;
+  declare company: CompanyModel;
 
   @HasMany(() => DocumentModel)
-  documents: DocumentModel[];
+  declare documents: DocumentModel[];
 }

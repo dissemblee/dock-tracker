@@ -26,5 +26,5 @@ export class CompanyModel extends BaseModel<CompanyModel> {
   declare inn: string | null;
 
   @HasMany(() => UserModel, 'companyId')
-  users: UserModel[];
+  declare users: UserModel[];
 }

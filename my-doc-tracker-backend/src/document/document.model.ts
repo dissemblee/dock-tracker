@@ -12,32 +12,32 @@ import { UserModel } from 'src/user/user.model';
 export class DocumentModel extends BaseModel<DocumentModel> {
   @ForeignKey(() => UserModel)
   @Column({ allowNull: false })
-  userId: number;
+  declare userId: number;
 
   @BelongsTo(() => UserModel)
-  user: UserModel;
+  declare user: UserModel;
 
   @Column({ allowNull: false })
-  title: string;
+  declare title: string;
 
   @Column({ type: DataType.DATE, allowNull: false })
-  expiresAt: Date;
+  declare expiresAt: Date;
 
   @Column({ type: DataType.INTEGER, allowNull: false })
-  notifyBefore: number;
+  declare notifyBefore: number;
 
   @Column({ allowNull: false, unique: true })
-  fileKey: string;
+  declare fileKey: string;
 
   @Column({ allowNull: false })
-  fileName: string;
+  declare fileName: string;
 
   @Column({ allowNull: false })
-  mimeType: string;
+  declare mimeType: string;
 
   @Column({ type: DataType.INTEGER, allowNull: false })
-  size: number;
+  declare size: number;
 
   @Column({ type: DataType.DATE, allowNull: false })
-  uploadedAt: Date;
+  declare uploadedAt: Date;
 }

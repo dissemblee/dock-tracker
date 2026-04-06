@@ -91,6 +91,7 @@ services:
       CORS_ORIGIN: http://localhost:5173
       NODE_ENV: development
       S3_ENDPOINT: http://s3:9000
+      S3_EXTERNAL_URL: http://localhost:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
     ports:

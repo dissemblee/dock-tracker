@@ -13,5 +13,6 @@ export {
   useDeleteDocumentMutation,
   useGetDownloadUrlQuery,
   useGetImageUrlQuery,
+  useGetImageBlobQuery,
   documentApi,
 } from "./document.api";

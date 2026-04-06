@@ -10,7 +10,17 @@
       "Bash(docker logs *)",
       "Bash(timeout *)",
       "Bash(docker ps *)",
-      "Bash(docker start *)"
+      "Bash(docker start *)",
+      "Bash(curl *)",
+      "Bash(jq *)",
+      "Bash(powershell *)",
+      "Bash(docker compose up *)",
+      "Bash(findstr *)",
+      "Bash(c:\\users\\ilyha\\onedrive\\desktop\\dock-tracker\\test-image-url.bat)",
+      "Bash(c:\\users\\ilyha\\onedrive\\desktop\\dock-tracker\\test-full-upload.bat)",
+      "Bash(curl.exe *)",
+      "Bash(c:\\users\\ilyha\\onedrive\\desktop\\dock-tracker\\test-image-proxy.bat)",
+      "Bash(del *)"
     ]
   },
   "$version": 3

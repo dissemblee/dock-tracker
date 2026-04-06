@@ -13,27 +13,27 @@ import { DocumentModel } from 'src/document/document.model';
 export class ReminderModel extends BaseModel<ReminderModel> {
   @ForeignKey(() => UserModel)
   @Column({ allowNull: false })
-  userId: number;
+  declare userId: number;
 
   @BelongsTo(() => UserModel)
-  user: UserModel;
+  declare user: UserModel;
 
   @ForeignKey(() => DocumentModel)
   @Column({ allowNull: true })
-  documentId: number;
+  declare documentId: number;
 
   @BelongsTo(() => DocumentModel)
-  document: DocumentModel;
+  declare document: DocumentModel;
 
   @Column({ allowNull: false })
-  title: string;
+  declare title: string;
 
   @Column({ type: DataType.TEXT, allowNull: true })
-  description: string;
+  declare description: string;
 
   @Column({ type: DataType.DATE, allowNull: false })
-  remindAt: Date;
+  declare remindAt: Date;
 
   @Column({ type: DataType.BOOLEAN, defaultValue: false })
-  isSent: boolean;
+  declare isSent: boolean;
 }

@@ -1,4 +1,5 @@
 import { baseApi } from "@shared/api";
+import { tokenStore } from "@shared/api/tokenStore";
 import type {
   DocumentDto,
   DocumentCreateDto,
@@ -8,6 +9,9 @@ import type {
 } from "./document.dto";
 
 const ENDPOINT = "documents";
+const API_BASE_URL = typeof window !== 'undefined'
+  ? (import.meta.env.VITE_API_URL || "http://localhost:3000")
+  : "http://localhost:3000";
 
 export const documentApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -91,6 +95,39 @@ export const documentApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+
+    getImageBlob: builder.query<
+      Blob,
+      number
+    >({
+      queryFn: async (id) => {
+        try {
+          const token = tokenStore.get();
+          
+          const response = await fetch(`${API_BASE_URL}/documents/${id}/image`, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          const blob = await response.blob();
+          
+          // Проверяем что это действительно Blob
+          if (!(blob instanceof Blob) || blob.size === 0) {
+            throw new Error('Invalid blob response');
+          }
+          
+          return { data: blob };
+        } catch (error) {
+          return { error: error as any };
+        }
+      },
+    }),
   }),
   overrideExisting: false,
 });
@@ -103,4 +140,5 @@ export const {
   useDeleteDocumentMutation,
   useGetDownloadUrlQuery,
   useGetImageUrlQuery,
+  useGetImageBlobQuery,
 } = documentApi;

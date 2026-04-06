@@ -1,25 +1,77 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router";
 import {
   useGetDocumentQuery,
-  useGetImageUrlQuery,
   useGetDownloadUrlQuery,
   useDeleteDocumentMutation,
 } from "@entities/document";
+import { tokenStore } from "@shared/api/tokenStore";
 import styles from "./DocumentPage.module.scss";
+
+const API_BASE_URL = typeof window !== 'undefined'
+  ? (import.meta.env.VITE_API_URL || "http://localhost:3000")
+  : "http://localhost:3000";
 
 export function DocumentPage() {
   const { id } = useParams<{ id: string }>();
   const documentId = id ? parseInt(id, 10) : 0;
 
-  const { data: documentData, isLoading, error } = useGetDocumentQuery(documentId);
-  const { data: imageUrlData } = useGetImageUrlQuery(documentId, {
-    skip: !documentData?.mimeType.startsWith("image/"),
+  const { data: documentData, isLoading, error } = useGetDocumentQuery(documentId, {
+    skip: !documentId,
   });
-  const { data: downloadUrlData } = useGetDownloadUrlQuery(documentId);
+  const { data: downloadUrlData } = useGetDownloadUrlQuery(documentId, {
+    skip: !documentId,
+  });
   const [deleteDocument] = useDeleteDocumentMutation();
 
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
+
+  // Загружаем изображение напрямую через fetch
+  useEffect(() => {
+    if (!documentId || !documentData?.mimeType.startsWith("image/")) {
+      setImageSrc(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchImage = async () => {
+      try {
+        const token = tokenStore.get();
+        const response = await fetch(`${API_BASE_URL}/documents/${documentId}/image`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        
+        if (cancelled) return;
+        
+        if (blob instanceof Blob && blob.size > 0) {
+          const url = URL.createObjectURL(blob);
+          setImageSrc(url);
+        } else {
+          setImageError(true);
+        }
+      } catch {
+        if (!cancelled) {
+          setImageError(true);
+        }
+      }
+    };
+
+    fetchImage();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [documentId, documentData?.mimeType]);
 
   const handleDelete = async () => {
     if (confirm("Вы уверены, что хотите удалить этот документ?")) {
@@ -107,13 +159,13 @@ export function DocumentPage() {
   }
 
   const isImage = documentData.mimeType.startsWith("image/");
-  const showImage = isImage && imageUrlData?.url && !imageError;
+  const showImage = isImage && !!imageSrc && !imageError;
 
   return (
     <div className={styles.documentPage}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <Link to="/documents" className={styles.backButton}>
+          <Link to="/profile/documents" className={styles.backButton}>
             ← Назад к списку
           </Link>
           <div className={styles.actions}>
@@ -175,7 +227,7 @@ export function DocumentPage() {
             <div className={styles.previewContainer}>
               <h3 className={styles.previewTitle}>Превью</h3>
               <img
-                src={imageUrlData.url}
+                src={imageSrc}
                 alt={documentData.title}
                 className={styles.previewImage}
                 onError={() => setImageError(true)}

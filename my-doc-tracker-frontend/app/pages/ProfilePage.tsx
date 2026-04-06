@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router";
 import { useAuth } from "@features/hooks/use-auth";
 import {
@@ -72,6 +72,16 @@ export function ProfilePage() {
   const [passwordError, setPasswordError] = useState("");
   const [isDocumentModalOpen, setIsDocumentModalOpen] = useState(false);
 
+  // Сортировки и поиск для документов
+  type SortField = "title" | "expiresAt" | "uploadedAt" | "createdAt";
+  type SortOrder = "ASC" | "DESC";
+  type StatusFilter = "ALL" | "ACTIVE" | "EXPIRING" | "EXPIRED";
+  
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
+  const [sortBy, setSortBy] = useState<SortField>("createdAt");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("DESC");
+
   const [createReminder] = useCreateReminderMutation();
   const [deleteReminder] = useDeleteReminderMutation();
   const [deleteDocument] = useDeleteDocumentMutation();
@@ -81,6 +91,37 @@ export function ProfilePage() {
 
   const { data: documents = [], isLoading: documentsLoading, refetch } =
     useGetDocumentsQuery({ limit: 100, offset: 0 }, { skip: !userId });
+
+  // Фильтрация и сортировка документов
+  const filteredDocuments = useMemo(() => {
+    let result = [...documents];
+
+    // Поиск по названию
+    if (searchTerm) {
+      result = result.filter((doc) =>
+        doc.title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Фильтр по статусу
+    if (statusFilter !== "ALL") {
+      result = result.filter((doc) => doc.status === statusFilter);
+    }
+
+    // Сортировка
+    result.sort((a, b) => {
+      const aVal = a[sortBy];
+      const bVal = b[sortBy];
+      const modifier = sortOrder === "ASC" ? 1 : -1;
+
+      if (typeof aVal === "string" && typeof bVal === "string") {
+        return aVal.localeCompare(bVal) * modifier;
+      }
+      return ((aVal as any) > (bVal as any) ? 1 : -1) * modifier;
+    });
+
+    return result;
+  }, [documents, searchTerm, statusFilter, sortBy, sortOrder]);
 
   const { data: reminders = [], isLoading: remindersLoading } =
     useGetRemindersQuery({ userId }, { skip: !userId });
@@ -440,13 +481,59 @@ export function ProfilePage() {
               onSuccess={handleDocumentModalSuccess}
             />
 
+            {/* Поиск и фильтры */}
+            <div className={styles.documentsFilters}>
+              <div className={styles.searchBox}>
+                <input
+                  type="text"
+                  placeholder="Поиск по названию..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className={styles.searchInput}
+                />
+              </div>
+
+              <div className={styles.statusFilters}>
+                {(["ALL", "ACTIVE", "EXPIRING", "EXPIRED"] as StatusFilter[]).map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => setStatusFilter(status)}
+                    className={`${styles.statusButton} ${statusFilter === status ? styles.statusButtonActive : ""}`}
+                  >
+                    {status === "ALL" ? "Все" : getStatusLabel(status)}
+                  </button>
+                ))}
+              </div>
+
+              <div className={styles.sortControls}>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortField)}
+                  className={styles.sortSelect}
+                >
+                  <option value="createdAt">Дата загрузки</option>
+                  <option value="title">Название</option>
+                  <option value="expiresAt">Срок действия</option>
+                  <option value="uploadedAt">Дата загрузки</option>
+                </select>
+                <button
+                  onClick={() => setSortOrder(sortOrder === "ASC" ? "DESC" : "ASC")}
+                  className={styles.sortOrderButton}
+                >
+                  {sortOrder === "ASC" ? "↑" : "↓"}
+                </button>
+              </div>
+            </div>
+
             {documentsLoading ? (
               <p className={styles.loadingText}>Загрузка документов...</p>
-            ) : documents.length === 0 ? (
-              <p className={styles.emptyText}>У вас пока нет документов</p>
+            ) : filteredDocuments.length === 0 ? (
+              <p className={styles.emptyText}>
+                {documents.length === 0 ? "У вас пока нет документов" : "Документы не найдены"}
+              </p>
             ) : (
               <div className={styles.documentsGrid}>
-                {documents.map((doc) => (
+                {filteredDocuments.map((doc) => (
                   <div key={doc.id} className={styles.documentCard}>
                     <div className={styles.docHeader}>
                       <h3 className={styles.docTitle}>{doc.title}</h3>
@@ -457,6 +544,9 @@ export function ProfilePage() {
                       </span>
                     </div>
                     <div className={styles.docInfo}>
+                      <p className={styles.docDetail}>
+                        Файл: {doc.fileName}
+                      </p>
                       <p className={styles.docDetail}>
                         Срок действия: {formatDate(doc.expiresAt)}
                       </p>

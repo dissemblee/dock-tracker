@@ -253,4 +253,15 @@ export class DocumentService {
 
     return { url };
   }
+
+  async getImageFile(documentId: number, userId: number): Promise<{ buffer: Buffer; contentType: string }> {
+    const doc = await this.assertOwner(documentId, userId);
+
+    const isImage = doc.mimeType.startsWith('image/');
+    if (!isImage) {
+      throw new BadRequestException('Документ не является изображением');
+    }
+
+    return await this.s3.getFile(doc.fileKey);
+  }
 }

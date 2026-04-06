@@ -81,11 +81,14 @@ export const customBaseQuery: BaseQueryFn<
 > = async ({ url, method = "GET", body, params }) => {
   try {
     const token = tokenStore.get();
-    
+
     // Отладка в development
     if (import.meta.env.DEV && !token) {
       console.warn('[RTK Query] JWT token not found for request:', url);
     }
+
+    // Для FormData не устанавливаем Content-Type — браузер сам добавит boundary
+    const isFormData = body instanceof FormData;
 
     const response = await axiosInstance.request({
       url,
@@ -94,7 +97,7 @@ export const customBaseQuery: BaseQueryFn<
       params,
       withCredentials: true,
       headers: {
-        "Content-Type": "application/json",
+        ...(isFormData ? {} : { "Content-Type": "application/json" }),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     });
