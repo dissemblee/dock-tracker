@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { useChangePasswordMutation } from "@entities/user";
 import { tokenStore } from "@shared/api/tokenStore";
 import styles from "@app/pages/ProfilePage.module.scss";
@@ -11,6 +12,7 @@ interface PasswordFormData {
 
 export default function ProfilePassword() {
   const [changePassword] = useChangePasswordMutation();
+  const navigate = useNavigate();
 
   const [passwordForm, setPasswordForm] = useState<PasswordFormData>({
     currentPassword: "",
@@ -44,7 +46,7 @@ export default function ProfilePassword() {
 
       setPasswordMessage("Пароль успешно изменён! Выполняется выход...");
       setTimeout(() => {
-        window.location.href = "/";
+        navigate("/", { replace: true });
       }, 1500);
     } catch (error: any) {
       setPasswordError(error.data?.message || "Ошибка при смене пароля");

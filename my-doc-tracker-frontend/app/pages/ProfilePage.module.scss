@@ -524,9 +524,13 @@
   margin-top: 1rem;
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .docButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 0.5rem 1rem;
   background: rgba(99, 102, 241, 0.2);
   color: #818cf8;
@@ -577,6 +581,10 @@
   gap: 1rem;
   margin-bottom: 1.5rem;
   align-items: center;
+  padding: 0.9rem;
+  border: 1px solid rgba(116, 147, 182, 0.2);
+  border-radius: 14px;
+  background: rgba(241, 249, 255, 0.72);
 }
 
 .searchBox {
@@ -886,4 +894,357 @@
   font-size: 0.8rem;
   font-weight: 500;
   margin-bottom: 1rem;
+}
+
+/* 2026 polish: better contrast, softer surfaces, adaptive layout */
+.profilePage {
+  color: #11243d;
+}
+
+.header {
+  position: sticky;
+  top: 12px;
+  z-index: 30;
+  margin: 0 12px 1.5rem;
+  padding: 0.75rem 0;
+  background: rgba(248, 252, 255, 0.72);
+  border: 1px solid rgba(118, 146, 184, 0.24);
+  border-radius: 18px;
+  backdrop-filter: blur(16px) saturate(135%);
+  box-shadow: 0 10px 30px rgba(41, 68, 102, 0.12);
+}
+
+.headerContent {
+  gap: 1rem;
+}
+
+.logo {
+  color: #132d4b;
+  letter-spacing: -0.02em;
+}
+
+.userName {
+  color: #294968;
+}
+
+.companyLink {
+  background: rgba(214, 230, 248, 0.7);
+  color: #1c436d;
+  border: 1px solid rgba(123, 154, 190, 0.4);
+
+  &:hover {
+    background: rgba(201, 222, 245, 0.88);
+  }
+}
+
+.logoutButton {
+  background: rgba(245, 96, 96, 0.11);
+  border-color: rgba(221, 73, 73, 0.38);
+  color: #b13939;
+}
+
+.main {
+  width: min(1180px, calc(100% - 24px));
+  padding: 0 0 24px;
+}
+
+.tabs {
+  position: sticky;
+  top: 106px;
+  z-index: 20;
+  overflow-x: auto;
+  padding: 0.5rem;
+  border: 1px solid rgba(112, 141, 176, 0.24);
+  border-radius: 16px;
+  background: rgba(245, 251, 255, 0.72);
+  backdrop-filter: blur(12px);
+  scrollbar-width: thin;
+  scroll-snap-type: x proximity;
+}
+
+.tab {
+  white-space: nowrap;
+  scroll-snap-align: start;
+  background: transparent;
+  color: #496583;
+  border-radius: 10px;
+  border-bottom: none;
+  margin-bottom: 0;
+  transition: background 0.22s ease, color 0.22s ease, transform 0.22s ease;
+
+  &:hover {
+    color: #1d3f66;
+    background: rgba(196, 219, 244, 0.55);
+    transform: translateY(-1px);
+  }
+}
+
+.tabActive {
+  color: #13345a;
+  background: rgba(170, 202, 238, 0.58);
+  box-shadow: inset 0 0 0 1px rgba(95, 131, 173, 0.45);
+}
+
+.section {
+  background: rgba(248, 252, 255, 0.78);
+  border: 1px solid rgba(115, 145, 181, 0.24);
+  box-shadow: 0 18px 40px rgba(43, 70, 104, 0.1);
+}
+
+.sectionTitle {
+  color: #102a47;
+  margin-bottom: 20px;
+}
+
+.allLink {
+  color: #285f97;
+
+  &:hover {
+    color: #1c4b79;
+  }
+}
+
+.emptyText,
+.loadingText,
+.loading,
+.importantDate,
+.docDetail,
+.reminderDesc,
+.reminderDate,
+.noCompany,
+.companyInn,
+.toggleText,
+.infoLabel {
+  color: #5a7591;
+}
+
+.importantCard,
+.documentCard,
+.reminderCard,
+.profileInfo,
+.companyInfo {
+  background: rgba(240, 248, 255, 0.68);
+  border-color: rgba(121, 149, 184, 0.24);
+}
+
+.importantTitle,
+.docTitle,
+.reminderTitle,
+.label,
+.infoValue,
+.companyName,
+.workModeTitle,
+.workModeRadioLabel {
+  color: #173756;
+}
+
+.formInput,
+.formTextarea,
+.formInputFull,
+.searchInput,
+.sortSelect {
+  background: rgba(234, 245, 255, 0.82);
+  border-color: rgba(114, 146, 183, 0.34);
+  color: #173756;
+
+  &::placeholder {
+    color: #7292b0;
+  }
+
+  &:focus {
+    border-color: rgba(59, 112, 170, 0.62);
+    background: rgba(247, 252, 255, 0.98);
+    box-shadow: 0 0 0 3px rgba(90, 148, 212, 0.16);
+  }
+}
+
+.sortSelect option {
+  background: #f4f9ff;
+  color: #1d3f66;
+}
+
+.statusButton,
+.sortOrderButton,
+.cancelButton {
+  background: rgba(228, 242, 255, 0.82);
+  color: #456482;
+  border-color: rgba(113, 145, 182, 0.32);
+
+  &:hover {
+    background: rgba(208, 229, 250, 0.88);
+    color: #173a61;
+  }
+}
+
+.statusButtonActive {
+  background: rgba(170, 202, 238, 0.62);
+  border-color: rgba(76, 118, 164, 0.5);
+  color: #174066;
+}
+
+.workModeSection {
+  border-top-color: rgba(110, 145, 184, 0.24);
+}
+
+.workModeOption {
+  background: rgba(237, 247, 255, 0.82);
+  border-color: rgba(116, 148, 183, 0.2);
+
+  &:hover {
+    background: rgba(225, 241, 255, 0.94);
+    border-color: rgba(104, 137, 174, 0.36);
+  }
+
+  input[type="radio"] {
+    border-color: rgba(93, 125, 160, 0.55);
+
+    &:checked {
+      border-color: #2c6ca8;
+
+      &::after {
+        background: #2c6ca8;
+      }
+    }
+  }
+}
+
+.workModeOptionActive {
+  background: rgba(183, 214, 248, 0.52);
+  border-color: rgba(72, 112, 157, 0.34);
+}
+
+.workModeRadioDesc {
+  color: #67819a;
+}
+
+.modeIndicator {
+  background: rgba(180, 211, 245, 0.52);
+  border-color: rgba(73, 112, 156, 0.32);
+  color: #24517d;
+}
+
+.submitButton,
+.editButton,
+.addButton {
+  transition: transform 0.24s ease, box-shadow 0.24s ease, filter 0.24s ease;
+
+  &:hover {
+    filter: saturate(112%);
+  }
+}
+
+.profileForm {
+  width: min(100%, 620px);
+}
+
+.companySelector {
+  width: min(100%, 420px);
+}
+
+@media (max-width: 980px) {
+  .header {
+    top: 8px;
+    margin: 0 8px 1.25rem;
+  }
+
+  .headerContent {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .userInfo {
+    width: 100%;
+    flex-wrap: wrap;
+    row-gap: 0.75rem;
+  }
+
+  .tabs {
+    top: 128px;
+  }
+
+  .section {
+    padding: 22px;
+  }
+
+  .documentsFilters {
+    padding: 0.75rem;
+  }
+
+  .documentsGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .docActions {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 640px) {
+  .main {
+    width: min(1180px, calc(100% - 12px));
+    gap: 1.25rem;
+  }
+
+  .tabs {
+    top: 156px;
+    gap: 0.35rem;
+    padding: 0.35rem;
+  }
+
+  .tab {
+    padding: 0.62rem 0.9rem;
+    font-size: 0.88rem;
+  }
+
+  .section {
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  .documentsFilters {
+    gap: 0.65rem;
+  }
+
+  .searchBox {
+    min-width: 100%;
+  }
+
+  .sortControls {
+    width: 100%;
+  }
+
+  .sortSelect {
+    width: 100%;
+  }
+
+  .profileInfo {
+    padding: 1rem;
+  }
+
+  .infoRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+
+  .formActions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .cancelButton,
+  .submitButton,
+  .editButton,
+  .addButton,
+  .docButton {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
 }

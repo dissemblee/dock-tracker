@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useCreateDocumentMutation } from "@entities/document";
 import styles from "./DocumentModal.module.scss";
 
@@ -77,14 +78,41 @@ export function DocumentModal({ isOpen, onClose, onSuccess }: DocumentModalProps
     setFormData({ ...formData, file });
   };
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (!isOpen || typeof document === "undefined") return;
 
-  return (
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <div className={styles.modalOverlay} onClick={onClose}>
-      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+      <div
+        className={styles.modalContent}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="add-document-title"
+      >
         <div className={styles.modalHeader}>
-          <h2 className={styles.modalTitle}>Добавить документ</h2>
-          <button className={styles.closeButton} onClick={onClose}>
+          <h2 className={styles.modalTitle} id="add-document-title">Добавить документ</h2>
+          <button type="button" className={styles.closeButton} onClick={onClose} aria-label="Закрыть окно">
             ✕
           </button>
         </div>
@@ -187,6 +215,7 @@ export function DocumentModal({ isOpen, onClose, onSuccess }: DocumentModalProps
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

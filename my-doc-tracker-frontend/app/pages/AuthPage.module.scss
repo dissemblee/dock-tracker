@@ -12,12 +12,12 @@
 }
 
 .authCard {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(248, 252, 255, 0.78);
+  backdrop-filter: blur(16px) saturate(130%);
+  border: 1px solid rgba(118, 146, 184, 0.26);
   border-radius: 24px;
   padding: 40px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 14px 36px rgba(40, 67, 101, 0.12);
 }
 
 .authTitle {
@@ -25,7 +25,7 @@
   font-weight: 700;
   text-align: center;
   margin-bottom: 32px;
-  color: #ffffff;
+  color: #132d4b;
 }
 
 .generalError {
@@ -54,29 +54,29 @@
 .label {
   font-size: 14px;
   font-weight: 500;
-  color: #e5e7eb;
+  color: #325273;
 }
 
 .input {
   width: 100%;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(234, 245, 255, 0.82);
+  border: 1px solid rgba(114, 146, 183, 0.34);
   border-radius: 12px;
-  color: #ffffff;
+  color: #173756;
   font-size: 16px;
   transition: all 0.2s ease;
   box-sizing: border-box;
 
   &::placeholder {
-    color: rgba(255, 255, 255, 0.4);
+    color: #7292b0;
   }
 
   &:focus {
     outline: none;
-    border-color: rgba(99, 102, 241, 0.5);
-    background: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    border-color: rgba(59, 112, 170, 0.62);
+    background: rgba(247, 252, 255, 0.98);
+    box-shadow: 0 0 0 3px rgba(90, 148, 212, 0.16);
   }
 
   &:disabled {
@@ -103,7 +103,7 @@
 .submitButton {
   width: 100%;
   padding: 14px 24px;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #1f2530 0%, #3a4350 100%);
   border: none;
   border-radius: 12px;
   color: #ffffff;
@@ -115,7 +115,7 @@
 
   &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+    box-shadow: 0 12px 28px rgba(31, 37, 48, 0.34);
   }
 
   &:active:not(:disabled) {
@@ -136,18 +136,18 @@
   gap: 8px;
   margin-top: 24px;
   padding-top: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(112, 141, 176, 0.2);
 }
 
 .toggleText {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
+  color: #5d7893;
 }
 
 .toggleButton {
   background: none;
   border: none;
-  color: #6366f1;
+  color: #2f3947;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -156,8 +156,8 @@
   border-radius: 6px;
 
   &:hover:not(:disabled) {
-    color: #8b5cf6;
-    background: rgba(99, 102, 241, 0.1);
+    color: #1e2632;
+    background: rgba(50, 58, 72, 0.1);
   }
 
   &:disabled {

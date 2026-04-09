@@ -64,21 +64,21 @@
   // ─── Primary ───────────────────────────────────────────────────────────────
 
   &--primary {
-    background: rgba(255, 255, 255, 0.70);
-    border-color: rgba(255, 255, 255, 0.90);
-    color: #043856;
+    background: var(--button-bg);
+    border-color: var(--button-border);
+    color: var(--button-text);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.6),
       0 4px 16px rgba(0, 40, 80, 0.12);
 
     &:hover:not(:disabled) {
-      background: rgba(255, 255, 255, 0.85);
-      border-color: white;
+      background: var(--button-bg-hover);
+      border-color: rgba(172, 194, 218, 0.54);
       box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.7),
-        0 0 0 1.5px rgba(255, 255, 255, 0.80),
-        0 0 16px 4px rgba(90, 150, 255, 0.30),
-        0 0 32px 8px rgba(80, 130, 255, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4),
+        0 0 0 1.5px rgba(170, 190, 212, 0.32),
+        0 0 16px 4px rgba(90, 150, 255, 0.22),
+        0 0 32px 8px rgba(80, 130, 255, 0.09),
         0 8px 24px rgba(0, 40, 80, 0.15);
     }
   }
@@ -86,19 +86,18 @@
   // ─── Secondary ─────────────────────────────────────────────────────────────
 
   &--secondary {
-    background: rgba(255, 255, 255, 0.10);
-    border-color: rgba(255, 255, 255, 0.30);
-    color: #1a4c72;
+    background: var(--button-bg);
+    border-color: var(--button-border);
+    color: var(--button-text);
 
     &:hover:not(:disabled) {
-      background: rgba(255, 255, 255, 0.20);
-      border-color: rgba(255, 255, 255, 0.75);
-      color: #043856;
+      background: var(--button-bg-hover);
+      border-color: rgba(172, 194, 218, 0.54);
       box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.45),
-        0 0 0 1.5px rgba(255, 255, 255, 0.70),
-        0 0 16px 4px rgba(90, 150, 255, 0.25),
-        0 0 32px 8px rgba(80, 130, 255, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4),
+        0 0 0 1.5px rgba(170, 190, 212, 0.32),
+        0 0 16px 4px rgba(90, 150, 255, 0.22),
+        0 0 32px 8px rgba(80, 130, 255, 0.09),
         0 4px 16px rgba(0, 40, 80, 0.10);
     }
   }
@@ -120,8 +119,8 @@
   &__spinner {
     width: 16px;
     height: 16px;
-    border: 2px solid rgba(4, 56, 86, 0.25);
-    border-top-color: #043856;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #ffffff;
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
     flex-shrink: 0;

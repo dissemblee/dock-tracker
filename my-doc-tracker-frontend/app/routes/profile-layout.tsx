@@ -1,22 +1,21 @@
-import { Outlet, useLocation, Link } from "react-router";
+import { Outlet, useLocation, Link, Navigate, useNavigate } from "react-router";
 import { useAuth } from "@features/hooks/use-auth";
 import { useGetCurrentCompanyQuery } from "@entities/company";
-import { tokenStore } from "@shared/api/tokenStore";
 import styles from "@app/pages/ProfilePage.module.scss";
 
 export default function ProfileLayout() {
   const { user, isAuthenticated, logout } = useAuth();
   const { data: currentCompany } = useGetCurrentCompanyQuery();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     await logout();
-    window.location.href = "/";
+    navigate("/", { replace: true });
   };
 
   if (!isAuthenticated) {
-    window.location.href = "/";
-    return null;
+    return <Navigate to="/" replace />;
   }
 
   // Определяем активную вкладку по URL

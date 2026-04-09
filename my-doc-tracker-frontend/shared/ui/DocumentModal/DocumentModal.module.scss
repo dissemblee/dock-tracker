@@ -4,12 +4,12 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
+  background: rgba(12, 15, 20, 0.42);
+  backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 3000;
   animation: fadeIn 0.2s ease-out;
 }
 
@@ -23,15 +23,15 @@
 }
 
 .modalContent {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.98) 100%);
-  border-radius: 24px;
+  background: linear-gradient(152deg, rgba(252, 252, 253, 0.98) 0%, rgba(245, 247, 249, 0.99) 100%);
+  border-radius: 20px;
   padding: 32px;
   width: 100%;
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 30px 70px rgba(19, 24, 33, 0.24);
+  border: 1px solid rgba(77, 87, 102, 0.24);
   animation: slideUp 0.3s ease-out;
 }
 
@@ -56,7 +56,7 @@
 .modalTitle {
   font-size: 24px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: #171b22;
   margin: 0;
 }
 
@@ -64,9 +64,9 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #ef4444;
+  background: rgba(50, 56, 66, 0.08);
+  border: 1px solid rgba(50, 56, 66, 0.22);
+  color: #3f4958;
   font-size: 20px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -75,7 +75,7 @@
   justify-content: center;
 
   &:hover {
-    background: rgba(239, 68, 68, 0.2);
+    background: rgba(50, 56, 66, 0.14);
     transform: scale(1.1);
   }
 }
@@ -88,9 +88,9 @@
 
 .errorMessage {
   padding: 12px 16px;
-  background: rgba(239, 68, 68, 0.1);
-  color: #dc2626;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(160, 38, 38, 0.08);
+  color: #8f2828;
+  border: 1px solid rgba(160, 38, 38, 0.2);
   border-radius: 12px;
   font-size: 14px;
   font-weight: 500;
@@ -105,36 +105,36 @@
 .label {
   font-size: 14px;
   font-weight: 600;
-  color: #374151;
+  color: #2e3846;
 }
 
 .input,
 .select {
   width: 100%;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(209, 213, 219, 0.8);
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(115, 126, 144, 0.34);
   border-radius: 12px;
   font-size: 15px;
-  color: #1a1a1a;
+  color: #161c25;
   transition: all 0.2s ease;
 
   &::placeholder {
-    color: #9ca3af;
+    color: #7f8898;
   }
 
   &:focus {
     outline: none;
-    border-color: #6366f1;
+    border-color: #4a5568;
     background: rgba(255, 255, 255, 1);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    box-shadow: 0 0 0 3px rgba(74, 85, 104, 0.16);
   }
 }
 
 .select {
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%234b5563'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 20px;
@@ -148,27 +148,27 @@
 .fileInput {
   width: 100%;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(209, 213, 219, 0.8);
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(115, 126, 144, 0.34);
   border-radius: 12px;
   font-size: 14px;
-  color: #374151;
+  color: #2a3442;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    border-color: #6366f1;
+    border-color: #4a5568;
   }
 
   &:focus {
     outline: none;
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    border-color: #4a5568;
+    box-shadow: 0 0 0 3px rgba(74, 85, 104, 0.16);
   }
 
   &::file-selector-button {
     padding: 8px 16px;
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    background: linear-gradient(135deg, #2f3743 0%, #4b5563 100%);
     color: white;
     border: none;
     border-radius: 8px;
@@ -186,14 +186,14 @@
 
 .fileHint {
   font-size: 13px;
-  color: #6b7280;
+  color: #4a5568;
   margin-top: 6px;
 }
 
 .fileInfo {
   font-size: 14px;
-  color: #059669;
-  background: rgba(5, 150, 105, 0.1);
+  color: #2f4958;
+  background: rgba(65, 81, 96, 0.12);
   padding: 8px 12px;
   border-radius: 8px;
   margin-top: 8px;
@@ -224,22 +224,22 @@
 }
 
 .cancelButton {
-  background: rgba(243, 244, 246, 0.8);
-  color: #374151;
-  border: 1px solid rgba(209, 213, 219, 0.8);
+  background: rgba(228, 232, 238, 0.7);
+  color: #2b3441;
+  border: 1px solid rgba(116, 126, 142, 0.24);
 
   &:hover:not(:disabled) {
-    background: rgba(229, 231, 235, 0.9);
+    background: rgba(213, 219, 228, 0.9);
   }
 }
 
 .submitButton {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #1f2530 0%, #3a4350 100%);
   color: white;
 
   &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+    box-shadow: 0 14px 26px rgba(31, 37, 48, 0.34);
   }
 
   &:active:not(:disabled) {
