@@ -16,16 +16,39 @@ interface FormData {
   file: File | null;
 }
 
+const DEFAULT_FORM_DATA: FormData = {
+  title: "",
+  expiresAt: "",
+  notifyBefore: 7,
+  file: null,
+};
+
+const ALLOWED_FILE_TYPES = ["application/pdf", "image/png", "image/jpeg", "image/jpg"];
+const CREATE_ERROR_MESSAGE = "Ошибка при создании документа";
+
+const getTodayDate = (): string => new Date().toISOString().split("T")[0];
+
+const getErrorMessage = (error: unknown): string => {
+  if (typeof error === "object" && error !== null && "data" in error) {
+    const errorData = (error as { data?: { message?: string } }).data;
+    if (errorData?.message) {
+      return errorData.message;
+    }
+  }
+
+  return CREATE_ERROR_MESSAGE;
+};
+
 export function DocumentModal({ isOpen, onClose, onSuccess }: DocumentModalProps) {
   const [createDocument] = useCreateDocumentMutation();
-  const [formData, setFormData] = useState<FormData>({
-    title: "",
-    expiresAt: "",
-    notifyBefore: 7,
-    file: null,
-  });
+  const [formData, setFormData] = useState<FormData>(DEFAULT_FORM_DATA);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  const resetForm = () => {
+    setFormData(DEFAULT_FORM_DATA);
+    setError("");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,8 +69,7 @@ export function DocumentModal({ isOpen, onClose, onSuccess }: DocumentModalProps
       return;
     }
 
-    const allowedTypes = ["application/pdf", "image/png", "image/jpeg", "image/jpg"];
-    if (!allowedTypes.includes(formData.file.type)) {
+    if (!ALLOWED_FILE_TYPES.includes(formData.file.type)) {
       setError("Допустимые форматы: PDF, PNG, JPG");
       return;
     }
@@ -63,11 +85,11 @@ export function DocumentModal({ isOpen, onClose, onSuccess }: DocumentModalProps
 
       await createDocument({ data }).unwrap();
 
-      setFormData({ title: "", expiresAt: "", notifyBefore: 7, file: null });
+      resetForm();
       onSuccess?.();
       onClose();
-    } catch (err: any) {
-      setError(err.data?.message || "Ошибка при создании документа");
+    } catch (submitError: unknown) {
+      setError(getErrorMessage(submitError));
     } finally {
       setIsSubmitting(false);
     }
@@ -75,7 +97,22 @@ export function DocumentModal({ isOpen, onClose, onSuccess }: DocumentModalProps
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
-    setFormData({ ...formData, file });
+    setFormData((prev) => ({ ...prev, file }));
+  };
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const title = e.target.value;
+    setFormData((prev) => ({ ...prev, title }));
+  };
+
+  const handleExpiresAtChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const expiresAt = e.target.value;
+    setFormData((prev) => ({ ...prev, expiresAt }));
+  };
+
+  const handleNotifyBeforeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const notifyBefore = Number(e.target.value);
+    setFormData((prev) => ({ ...prev, notifyBefore }));
   };
 
   useEffect(() => {
@@ -128,7 +165,7 @@ export function DocumentModal({ isOpen, onClose, onSuccess }: DocumentModalProps
               type="text"
               id="title"
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={handleTitleChange}
               className={styles.input}
               placeholder="Введите название документа"
               minLength={3}
@@ -145,10 +182,10 @@ export function DocumentModal({ isOpen, onClose, onSuccess }: DocumentModalProps
               type="date"
               id="expiresAt"
               value={formData.expiresAt}
-              onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
+              onChange={handleExpiresAtChange}
               className={styles.input}
               required
-              min={new Date().toISOString().split("T")[0]}
+              min={getTodayDate()}
             />
           </div>
 
@@ -159,7 +196,7 @@ export function DocumentModal({ isOpen, onClose, onSuccess }: DocumentModalProps
             <select
               id="notifyBefore"
               value={formData.notifyBefore}
-              onChange={(e) => setFormData({ ...formData, notifyBefore: Number(e.target.value) })}
+              onChange={handleNotifyBeforeChange}
               className={styles.select}
             >
               <option value={1}>1 день</option>
