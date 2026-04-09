@@ -8,6 +8,7 @@ import { DocumentModule } from './document/document.module';
 import { SeedModule } from './seed/seed.module';
 import { ReminderModule } from './reminder/reminder.module';
 import { CompanyMembersModule } from './company/members/company-members.module';
+import { CompanyAccessModule } from './shared/company-access-guard/company-access.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { CompanyMembersModule } from './company/members/company-members.module';
     CompanyMembersModule,
     SeedModule,
     ReminderModule,
+    CompanyAccessModule,
   ],
 })
 export class AppModule {}

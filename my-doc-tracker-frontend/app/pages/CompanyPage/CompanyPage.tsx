@@ -1,23 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import {
   useGetCurrentCompanyQuery,
+  useGetMyCompaniesQuery,
   useCreateCompanyMutation,
   useUpdateCompanyMutation,
-  useGetCompanyMembersQuery,
+  useGetCompanyEmployeesQuery,
   useInviteMemberMutation,
   useRemoveMemberMutation,
   useLazySearchUserByEmailQuery,
 } from "@entities/company";
 import { useGetCurrentUserQuery } from "@entities/user";
-import type { CompanyCreateDto, CompanyUpdateDto, InviteMemberDto } from "@entities/company";
+import type { CompanyCreateDto, CompanyUpdateDto, CompanyMemberDto, CompanyDto } from "@entities/company";
 import styles from "./CompanyPage.module.scss";
+
+interface CompanyPageProps {
+  companyId?: number | null;
+  onBack?: () => void;
+}
 
 type TabType = "members" | "settings" | "create";
 
-export function CompanyPage() {
+export function CompanyPage({ companyId: propCompanyId, onBack }: CompanyPageProps) {
   const { data: currentUser, isLoading: userLoading } = useGetCurrentUserQuery();
   const { data: currentCompany, isLoading: companyLoading } = useGetCurrentCompanyQuery();
+  const { data: myCompanies = [] } = useGetMyCompaniesQuery();
   const [createCompany] = useCreateCompanyMutation();
+  const navigate = useNavigate();
   const [updateCompany] = useUpdateCompanyMutation();
   const [inviteMember] = useInviteMemberMutation();
   const [removeMember] = useRemoveMemberMutation();
@@ -26,35 +35,66 @@ export function CompanyPage() {
   const [activeTab, setActiveTab] = useState<TabType>("members");
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
-  const [searchResults, setSearchResults] = useState<Array<{ id: number; name: string; email: string; companyId: number | null }>>([]);
+  const [searchResults, setSearchResults] = useState<
+    Array<{ id: number; name: string; email: string; companyId: number | null }>
+  >([]);
   const [inviteError, setInviteError] = useState("");
   const [inviteSuccess, setInviteSuccess] = useState("");
 
   const [companyForm, setCompanyForm] = useState<CompanyCreateDto>({
     name: "",
     inn: "",
+    ogrn: "",
+    address: "",
+    phone: "",
+    email: "",
+    website: "",
   });
 
-  const [settingsForm, setSettingsForm] = useState<CompanyUpdateDto>({
-    name: "",
-    inn: "",
+  const [settingsForm, setSettingsForm] = useState<CompanyUpdateDto>({});
+
+  // Определяем активную компанию
+  const selectedCompany = propCompanyId
+    ? myCompanies.find((c) => c.id === propCompanyId) || currentCompany || null
+    : currentCompany;
+  const effectiveCompanyId = propCompanyId || currentCompany?.id;
+
+  // Используем новый эндпоинт — сотрудники через company_members
+  const { data: members, isLoading: membersLoading } = useGetCompanyEmployeesQuery(effectiveCompanyId!, {
+    skip: !effectiveCompanyId,
   });
 
-  const companyId = currentCompany?.id;
-  const { data: membersData, isLoading: membersLoading } = useGetCompanyMembersQuery(companyId!, {
-    skip: !companyId,
-  });
+  // Определяем роль текущего пользователя
+  const currentMember = members?.find((m) => m.userId === currentUser?.id);
+  const isOwner = currentMember?.role === "owner";
+  const isAdmin = isOwner || currentMember?.role === "admin" || currentUser?.role === "ADMIN";
 
-  const members = membersData?.result || [];
-
-  const isAdmin = currentUser?.role === "ADMIN";
+  // Если передан companyId но у пользователя нет этой компании — редирект
+  useEffect(() => {
+    if (propCompanyId && !selectedCompany) {
+      alert("У вас нет доступа к этой компании");
+      onBack?.();
+    }
+  }, [propCompanyId, selectedCompany, onBack]);
 
   const handleCreateCompany = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createCompany(companyForm).unwrap();
+      const dto: CompanyCreateDto = {
+        name: companyForm.name,
+      };
+      if (companyForm.inn) dto.inn = companyForm.inn;
+      if (companyForm.ogrn) dto.ogrn = companyForm.ogrn;
+      if (companyForm.address) dto.address = companyForm.address;
+      if (companyForm.phone) dto.phone = companyForm.phone;
+      if (companyForm.email) dto.email = companyForm.email;
+      if (companyForm.website) dto.website = companyForm.website;
+
+      await createCompany(dto).unwrap();
       alert("Компания успешно создана!");
-      setCompanyForm({ name: "", inn: "" });
+      setCompanyForm({ name: "", inn: "", ogrn: "", address: "", phone: "", email: "", website: "" });
+      onBack?.();
+      window.location.reload();
     } catch (err) {
       console.error("Ошибка при создании:", err);
       alert("Ошибка при создании компании");
@@ -63,9 +103,12 @@ export function CompanyPage() {
 
   const handleUpdateCompany = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedCompany) return;
     try {
-      await updateCompany(settingsForm).unwrap();
+      await updateCompany({ ...settingsForm, id: selectedCompany.id }).unwrap();
       alert("Данные компании обновлены!");
+      setSettingsForm({});
+      window.location.reload();
     } catch (err) {
       console.error("Ошибка при обновлении:", err);
       alert("Ошибка при обновлении");
@@ -85,8 +128,13 @@ export function CompanyPage() {
     }
   };
 
-  const handleInviteUser = async (user: { id: number; name: string; email: string; companyId: number | null }) => {
-    if (!companyId) return;
+  const handleInviteUser = async (user: {
+    id: number;
+    name: string;
+    email: string;
+    companyId: number | null;
+  }) => {
+    if (!effectiveCompanyId) return;
 
     if (user.companyId !== null) {
       setInviteError("Пользователь уже состоит в компании");
@@ -94,8 +142,8 @@ export function CompanyPage() {
     }
 
     try {
-      await inviteMember({ companyId, data: { email: user.email } }).unwrap();
-      setInviteSuccess(`Пользователь ${user.name} добавлен в компанию`);
+      await inviteMember({ companyId: effectiveCompanyId, data: { email: user.email } }).unwrap();
+      setInviteSuccess(`Пользователь ${user.name} приглашён в компанию`);
       setInviteEmail("");
       setSearchResults([]);
       setShowInviteModal(false);
@@ -105,11 +153,17 @@ export function CompanyPage() {
     }
   };
 
-  const handleRemoveMember = async (userId: number) => {
-    if (!companyId) return;
+  const handleRemoveMember = async (member: CompanyMemberDto) => {
+    if (!effectiveCompanyId) return;
+
+    if (member.role === "owner") {
+      alert("Нельзя удалить владельца компании");
+      return;
+    }
+
     if (confirm("Вы уверены, что хотите удалить участника из компании?")) {
       try {
-        await removeMember({ companyId, userId }).unwrap();
+        await removeMember({ companyId: effectiveCompanyId, userId: member.userId }).unwrap();
         alert("Участник удалён");
       } catch (err: any) {
         alert(err.data?.message || "Ошибка при удалении");
@@ -119,9 +173,9 @@ export function CompanyPage() {
 
   const getRoleLabel = (role: string) => {
     const labels: Record<string, string> = {
-      ADMIN: "Администратор",
-      MEMBER: "Сотрудник",
-      NO_ROLE: "Без роли",
+      owner: "👑 Владелец",
+      admin: "⭐ Администратор",
+      member: "👤 Сотрудник",
     };
     return labels[role] || role;
   };
@@ -130,10 +184,16 @@ export function CompanyPage() {
     return <div className={styles.loading}>Загрузка...</div>;
   }
 
-  const hasCompany = !!currentCompany;
+  const hasCompany = !!selectedCompany;
 
   return (
     <div className={styles.companyPage}>
+      {onBack && (
+        <button onClick={onBack} className={styles.backButton}>
+          ← Назад к списку
+        </button>
+      )}
+
       <div className={styles.container}>
         <h1 className={styles.title}>Компания</h1>
 
@@ -176,6 +236,79 @@ export function CompanyPage() {
                   />
                 </div>
 
+                <div className={styles.formGroup}>
+                  <label htmlFor="ogrn" className={styles.label}>
+                    ОГРН (необязательно)
+                  </label>
+                  <input
+                    type="text"
+                    id="ogrn"
+                    value={companyForm.ogrn || ""}
+                    onChange={(e) => setCompanyForm({ ...companyForm, ogrn: e.target.value })}
+                    className={styles.input}
+                    placeholder="1234567890123"
+                    pattern="[0-9]{13,15}"
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="address" className={styles.label}>
+                    Адрес (необязательно)
+                  </label>
+                  <input
+                    type="text"
+                    id="address"
+                    value={companyForm.address || ""}
+                    onChange={(e) => setCompanyForm({ ...companyForm, address: e.target.value })}
+                    className={styles.input}
+                    placeholder="г. Москва, ул. Примерная, д. 1"
+                  />
+                </div>
+
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="phone" className={styles.label}>
+                      Телефон
+                    </label>
+                    <input
+                      type="tel"
+                      id="phone"
+                      value={companyForm.phone || ""}
+                      onChange={(e) => setCompanyForm({ ...companyForm, phone: e.target.value })}
+                      className={styles.input}
+                      placeholder="+7 (999) 123-45-67"
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label htmlFor="companyEmail" className={styles.label}>
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      id="companyEmail"
+                      value={companyForm.email || ""}
+                      onChange={(e) => setCompanyForm({ ...companyForm, email: e.target.value })}
+                      className={styles.input}
+                      placeholder="info@company.ru"
+                    />
+                  </div>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="website" className={styles.label}>
+                    Сайт
+                  </label>
+                  <input
+                    type="url"
+                    id="website"
+                    value={companyForm.website || ""}
+                    onChange={(e) => setCompanyForm({ ...companyForm, website: e.target.value })}
+                    className={styles.input}
+                    placeholder="https://company.ru"
+                  />
+                </div>
+
                 <button type="submit" className={styles.submitButton}>
                   Создать компанию
                 </button>
@@ -184,6 +317,42 @@ export function CompanyPage() {
           </div>
         ) : (
           <>
+            {/* Информация о компании */}
+            <div className={styles.companyInfo}>
+              <h2 className={styles.companyName}>{selectedCompany?.name}</h2>
+              <div className={styles.companyDetails}>
+                {selectedCompany?.inn && (
+                  <span className={styles.detail}>ИНН: {selectedCompany.inn}</span>
+                )}
+                {selectedCompany?.ogrn && (
+                  <span className={styles.detail}>ОГРН: {selectedCompany.ogrn}</span>
+                )}
+                {selectedCompany?.address && (
+                  <span className={styles.detail}>📍 {selectedCompany.address}</span>
+                )}
+                {selectedCompany?.phone && (
+                  <span className={styles.detail}>📞 {selectedCompany.phone}</span>
+                )}
+                {selectedCompany?.email && (
+                  <span className={styles.detail}>✉️ {selectedCompany.email}</span>
+                )}
+                {selectedCompany?.website && (
+                  <span className={styles.detail}>
+                    🌐{" "}
+                    <a
+                      href={selectedCompany.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.websiteLink}
+                    >
+                      {selectedCompany.website}
+                    </a>
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Табы */}
             <div className={styles.tabs}>
               <button
                 onClick={() => setActiveTab("members")}
@@ -199,6 +368,7 @@ export function CompanyPage() {
               </button>
             </div>
 
+            {/* Контент табов */}
             {activeTab === "members" && (
               <div className={styles.tabContent}>
                 <div className={styles.membersHeader}>
@@ -225,32 +395,46 @@ export function CompanyPage() {
                   <div className={styles.loading}>Загрузка участников...</div>
                 ) : (
                   <div className={styles.membersList}>
-                    {members.length === 0 ? (
+                    {!members || members.length === 0 ? (
                       <div className={styles.emptyMembers}>
                         В компании пока нет участников
                       </div>
                     ) : (
-                      members.map((member: any) => (
-                        <div key={member.id} className={styles.memberCard}>
-                          <div className={styles.memberInfo}>
-                            <div className={styles.memberName}>{member.name}</div>
-                            <div className={styles.memberEmail}>{member.email}</div>
+                      members.map((member: CompanyMemberDto) => {
+                        const user = member.user;
+                        return (
+                          <div key={member.id} className={styles.memberCard}>
+                            <div className={styles.memberInfo}>
+                              <div className={styles.memberName}>
+                                {user?.name || member.inviteEmail || "Приглашение..."}
+                              </div>
+                              <div className={styles.memberEmail}>
+                                {user?.email || member.inviteEmail || "—"}
+                              </div>
+                              {member.acceptedAt ? (
+                                <div className={styles.memberStatus}>
+                                  Принято: {new Date(member.acceptedAt).toLocaleDateString("ru-RU")}
+                                </div>
+                              ) : (
+                                <div className={styles.memberStatus}>⏳ Ожидает принятия</div>
+                              )}
+                            </div>
+                            <div className={styles.memberRole}>
+                              <span className={`${styles.roleBadge} ${styles[`role-${member.role}`]}`}>
+                                {getRoleLabel(member.role)}
+                              </span>
+                            </div>
+                            {isAdmin && member.role !== "owner" && user?.id !== currentUser?.id && (
+                              <button
+                                onClick={() => handleRemoveMember(member)}
+                                className={styles.removeButton}
+                              >
+                                Удалить
+                              </button>
+                            )}
                           </div>
-                          <div className={styles.memberRole}>
-                            <span className={styles.roleBadge}>
-                              {getRoleLabel(member.role)}
-                            </span>
-                          </div>
-                          {isAdmin && member.id !== currentUser?.id && (
-                            <button
-                              onClick={() => handleRemoveMember(member.id)}
-                              className={styles.removeButton}
-                            >
-                              Удалить
-                            </button>
-                          )}
-                        </div>
-                      ))
+                        );
+                      })
                     )}
                   </div>
                 )}
@@ -268,10 +452,10 @@ export function CompanyPage() {
                     <input
                       type="text"
                       id="settingsName"
-                      value={settingsForm.name || currentCompany?.name || ""}
+                      value={settingsForm.name ?? selectedCompany?.name ?? ""}
                       onChange={(e) => setSettingsForm({ ...settingsForm, name: e.target.value })}
                       className={styles.input}
-                      placeholder={currentCompany?.name}
+                      placeholder={selectedCompany?.name}
                       minLength={2}
                       maxLength={100}
                     />
@@ -284,11 +468,84 @@ export function CompanyPage() {
                     <input
                       type="text"
                       id="settingsInn"
-                      value={settingsForm.inn || currentCompany?.inn || ""}
+                      value={settingsForm.inn ?? selectedCompany?.inn ?? ""}
                       onChange={(e) => setSettingsForm({ ...settingsForm, inn: e.target.value })}
                       className={styles.input}
-                      placeholder={currentCompany?.inn || "Не указан"}
+                      placeholder={selectedCompany?.inn || "Не указан"}
                       pattern="[0-9]{10,15}"
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label htmlFor="settingsOgrn" className={styles.label}>
+                      ОГРН
+                    </label>
+                    <input
+                      type="text"
+                      id="settingsOgrn"
+                      value={settingsForm.ogrn ?? selectedCompany?.ogrn ?? ""}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, ogrn: e.target.value })}
+                      className={styles.input}
+                      placeholder={selectedCompany?.ogrn || "Не указан"}
+                      pattern="[0-9]{13,15}"
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label htmlFor="settingsAddress" className={styles.label}>
+                      Адрес
+                    </label>
+                    <input
+                      type="text"
+                      id="settingsAddress"
+                      value={settingsForm.address ?? selectedCompany?.address ?? ""}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, address: e.target.value })}
+                      className={styles.input}
+                      placeholder={selectedCompany?.address || "Не указан"}
+                    />
+                  </div>
+
+                  <div className={styles.formRow}>
+                    <div className={styles.formGroup}>
+                      <label htmlFor="settingsPhone" className={styles.label}>
+                        Телефон
+                      </label>
+                      <input
+                        type="tel"
+                        id="settingsPhone"
+                        value={settingsForm.phone ?? selectedCompany?.phone ?? ""}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, phone: e.target.value })}
+                        className={styles.input}
+                        placeholder={selectedCompany?.phone || "Не указан"}
+                      />
+                    </div>
+
+                    <div className={styles.formGroup}>
+                      <label htmlFor="settingsEmail" className={styles.label}>
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        id="settingsEmail"
+                        value={settingsForm.email ?? selectedCompany?.email ?? ""}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, email: e.target.value })}
+                        className={styles.input}
+                        placeholder={selectedCompany?.email || "Не указан"}
+                      />
+                    </div>
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label htmlFor="settingsWebsite" className={styles.label}>
+                      Сайт
+                    </label>
+                    <input
+                      type="url"
+                      id="settingsWebsite"
+                      value={settingsForm.website ?? selectedCompany?.website ?? ""}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, website: e.target.value })}
+                      className={styles.input}
+                      placeholder={selectedCompany?.website || "Не указан"}
                     />
                   </div>
 
@@ -301,6 +558,7 @@ export function CompanyPage() {
           </>
         )}
 
+        {/* Модалка приглашения */}
         {showInviteModal && (
           <div className={styles.modal}>
             <div className={styles.modalContent}>

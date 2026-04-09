@@ -9,6 +9,8 @@ interface JwtPayload {
   email: string;
   role: string;
   companyId?: number | null;
+  workMode?: string;
+  activeCompanyId?: number | null;
 }
 
 export interface JwtUser {
@@ -16,6 +18,8 @@ export interface JwtUser {
   email: string;
   role: string;
   companyId?: number | null;
+  workMode?: string;
+  activeCompanyId?: number | null;
 }
 
 @Injectable()
@@ -53,6 +57,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       email: user.email,
       role: user.role,
       companyId: user.companyId,
+      workMode: user.workMode,
+      activeCompanyId: user.activeCompanyId,
     };
   }
 }

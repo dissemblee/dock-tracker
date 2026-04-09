@@ -8,6 +8,7 @@ import {
 } from "@entities/user";
 import type { UserDto } from "@entities/user";
 import { useGetCurrentCompanyQuery } from "@entities/company";
+import { CompaniesPage } from "@app/pages/CompaniesPage/CompaniesPage";
 import {
   useGetDocumentsQuery,
   useGetDownloadUrlQuery,
@@ -65,7 +66,7 @@ export function ProfilePage() {
     confirmPassword: "",
   });
 
-  const [activeTab, setActiveTab] = useState<"overview" | "documents" | "profile" | "password">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "documents" | "profile" | "password" | "company">("overview");
   const [isEditing, setIsEditing] = useState(false);
   const [updateMessage, setUpdateMessage] = useState("");
   const [passwordMessage, setPasswordMessage] = useState("");
@@ -188,17 +189,17 @@ export function ProfilePage() {
       const result = await updateUser({ id: userId, data: profileForm }).unwrap();
       setUpdateMessage("Профиль обновлён!");
       setIsEditing(false);
-      
+
       // Обновляем данные пользователя в хуке useAuth
-      if (result) {
+      if (result?.result) {
         const updatedUser = {
           ...user,
-          name: result.name || user?.name,
-          email: result.email || user?.email,
+          name: result.result.name || user?.name,
+          email: result.result.email || user?.email,
         } as UserDto;
         tokenStore.set(JSON.stringify(updatedUser));
       }
-      
+
       await refetchUser();
       setTimeout(() => setUpdateMessage(""), 3000);
     } catch (error: any) {
@@ -358,6 +359,12 @@ export function ProfilePage() {
             className={`${styles.tab} ${activeTab === "password" ? styles.tabActive : ""}`}
           >
             Смена пароля
+          </button>
+          <button
+            onClick={() => setActiveTab("company")}
+            className={`${styles.tab} ${activeTab === "company" ? styles.tabActive : ""}`}
+          >
+            Компания
           </button>
         </div>
 
@@ -713,6 +720,12 @@ export function ProfilePage() {
                 Изменить пароль
               </button>
             </form>
+          </section>
+        )}
+
+        {activeTab === "company" && (
+          <section className={styles.section}>
+            <CompaniesPage />
           </section>
         )}
       </main>

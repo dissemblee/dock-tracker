@@ -5,6 +5,7 @@ import type {
   UserCursorResultDto,
   UserResultDto,
   UserDto,
+  UpdateWorkModeDto,
 } from "./user.dto";
 
 const ENDPOINT = "user";
@@ -86,6 +87,19 @@ export const usersApi = baseApi.injectEndpoints({
 
       invalidatesTags: [],
     }),
+
+    /** Переключить режим работы (personal / company) */
+    updateWorkMode: builder.mutation<UserDto, UpdateWorkModeDto>({
+      query: (data) => ({
+        url: `${ENDPOINT}/work-mode`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: [
+        { type: "Users", id: "LIST" },
+        { type: "Documents", id: "LIST" },
+      ],
+    }),
   }),
   overrideExisting: false,
 });
@@ -96,4 +110,5 @@ export const {
   useGetUserByIdQuery,
   useUpdateUserMutation,
   useChangePasswordMutation,
+  useUpdateWorkModeMutation,
 } = usersApi;

@@ -16,6 +16,7 @@ import { UserService } from './user.service';
 import { UserModel } from './user.model';
 import { JwtAuthGuard } from 'src/shared/jwt/jwt-auth.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateWorkModeDto } from './dto/update-work-mode.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('user')
@@ -53,6 +54,23 @@ export class UserController {
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<UserModel> {
     return this.userService.update(id, updateUserDto);
+  }
+
+  /**
+   * Переключить режим работы пользователя (personal / company)
+   */
+  @Patch('work-mode')
+  async updateWorkMode(
+    @Req() req: Request,
+    @Body() dto: UpdateWorkModeDto,
+  ): Promise<UserModel> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const userId = (req as any).user.id as number;
+    return this.userService.updateWorkMode(
+      userId,
+      dto.workMode,
+      dto.activeCompanyId ?? null,
+    );
   }
 
   @Post('change-password')

@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { BaseService } from 'src/shared/base/base.service';
-import { UserModel } from './user.model';
+import { UserModel, WorkMode } from './user.model';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize, QueryTypes } from 'sequelize';
 
@@ -34,6 +34,23 @@ export class UserService extends BaseService<UserModel> {
     return this.userModel.findByPk(id);
   }
 
+  /**
+   * Обновить режим работы пользователя (personal / company)
+   */
+  async updateWorkMode(
+    userId: number,
+    workMode: WorkMode,
+    activeCompanyId: number | null = null,
+  ): Promise<UserModel> {
+    const user = await this.currentUser(userId);
+    if (!user) {
+      throw new NotFoundException('Пользователь не найден');
+    }
+
+    await user.update({ workMode, activeCompanyId });
+    return user;
+  }
+
   async changePassword(
     userId: number,
     currentPassword: string,
@@ -58,16 +75,16 @@ export class UserService extends BaseService<UserModel> {
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    
+
     // Обновляем пароль через raw SQL запрос
     await this.userModel.sequelize.query(
       `UPDATE users SET password = :password, "updatedAt" = :updatedAt WHERE id = :id`,
-      { 
-        replacements: { 
-          password: hashedPassword, 
-          updatedAt: new Date(), 
-          id: userId 
-        } 
+      {
+        replacements: {
+          password: hashedPassword,
+          updatedAt: new Date(),
+          id: userId
+        }
       }
     );
 

@@ -6,6 +6,7 @@ import type {
   DocumentUpdateDto,
   DocumentQueryDto,
   DocumentImageUrlDto,
+  DocumentGroupedByOwner,
 } from "./document.dto";
 
 const ENDPOINT = "documents";
@@ -25,6 +26,27 @@ export const documentApi = baseApi.injectEndpoints({
         result
           ? [
               ...result.map(({ id }) => ({ type: "Documents" as const, id })),
+              { type: "Documents", id: "LIST" },
+            ]
+          : [{ type: "Documents", id: "LIST" }],
+    }),
+
+    /** Иерархический список документов компании (сгруппированный по сотрудникам) */
+    getDocumentsGroupedByOwner: builder.query<
+      DocumentGroupedByOwner[],
+      { companyId: number; query?: Omit<DocumentQueryDto, "companyId"> }
+    >({
+      query: ({ companyId, query: q }) => ({
+        url: `${ENDPOINT}/company/${companyId}/grouped`,
+        method: "GET",
+        params: q,
+      }),
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.flatMap((group) =>
+                group.documents.map((doc) => ({ type: "Documents" as const, id: doc.id }))
+              ),
               { type: "Documents", id: "LIST" },
             ]
           : [{ type: "Documents", id: "LIST" }],
@@ -103,7 +125,7 @@ export const documentApi = baseApi.injectEndpoints({
       queryFn: async (id) => {
         try {
           const token = tokenStore.get();
-          
+
           const response = await fetch(`${API_BASE_URL}/documents/${id}/image`, {
             method: "GET",
             headers: {
@@ -116,12 +138,12 @@ export const documentApi = baseApi.injectEndpoints({
           }
 
           const blob = await response.blob();
-          
+
           // Проверяем что это действительно Blob
           if (!(blob instanceof Blob) || blob.size === 0) {
             throw new Error('Invalid blob response');
           }
-          
+
           return { data: blob };
         } catch (error) {
           return { error: error as any };
@@ -134,6 +156,7 @@ export const documentApi = baseApi.injectEndpoints({
 
 export const {
   useGetDocumentsQuery,
+  useGetDocumentsGroupedByOwnerQuery,
   useGetDocumentQuery,
   useCreateDocumentMutation,
   useUpdateDocumentMutation,

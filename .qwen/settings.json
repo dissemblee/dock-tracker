@@ -20,7 +20,23 @@
       "Bash(c:\\users\\ilyha\\onedrive\\desktop\\dock-tracker\\test-full-upload.bat)",
       "Bash(curl.exe *)",
       "Bash(c:\\users\\ilyha\\onedrive\\desktop\\dock-tracker\\test-image-proxy.bat)",
-      "Bash(del *)"
+      "Bash(del *)",
+      "Bash(npx *)",
+      "Bash(docker compose ps)",
+      "Bash(docker compose logs *)",
+      "Bash(docker compose down *)",
+      "Bash(docker volume *)",
+      "Bash(docker system *)",
+      "Bash(docker build *)",
+      "Bash(docker compose build *)",
+      "Bash(taskkill *)",
+      "Bash(tasklist *)",
+      "Bash(sleep *)",
+      "Bash(start-sleep *)",
+      "Bash(type *)",
+      "Bash(docker rmi *)",
+      "Bash(true)",
+      "Bash(docker images *)"
     ]
   },
   "$version": 3

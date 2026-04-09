@@ -27,6 +27,8 @@ export default function ProfileLayout() {
     ? "profile"
     : path.includes("/documents")
     ? "documents"
+    : path.includes("/company")
+    ? "company"
     : "overview";
 
   return (
@@ -73,6 +75,12 @@ export default function ProfileLayout() {
             className={`${styles.tab} ${activeTab === "password" ? styles.tabActive : ""}`}
           >
             Смена пароля
+          </Link>
+          <Link
+            to="/company"
+            className={`${styles.tab} ${activeTab === "company" ? styles.tabActive : ""}`}
+          >
+            Компания
           </Link>
         </div>
 

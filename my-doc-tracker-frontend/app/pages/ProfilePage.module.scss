@@ -752,3 +752,138 @@
     background: rgba(255, 255, 255, 0.2);
   }
 }
+
+/* ====== Режим работы с документами ====== */
+.workModeSection {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(198, 205, 255, 0.15);
+}
+
+.workModeTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #c6cdff;
+  margin: 0 0 1rem 0;
+}
+
+.workModeOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.workModeOption {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: rgba(8, 10, 35, 0.4);
+  border: 1px solid rgba(198, 205, 255, 0.1);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(18, 19, 55, 0.6);
+    border-color: rgba(198, 205, 255, 0.25);
+  }
+
+  input[type="radio"] {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(198, 205, 255, 0.3);
+    border-radius: 50%;
+    flex-shrink: 0;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+
+    &:checked {
+      border-color: #8b9cf7;
+
+      &::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #8b9cf7;
+      }
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.workModeOptionActive {
+  background: rgba(102, 126, 234, 0.1);
+  border-color: rgba(102, 126, 234, 0.3);
+
+  input[type="radio"] {
+    border-color: #8b9cf7;
+
+    &::after {
+      background: #8b9cf7;
+    }
+  }
+}
+
+.workModeRadioInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.workModeRadioLabel {
+  font-weight: 600;
+  color: #e0e4ff;
+  font-size: 0.95rem;
+}
+
+.workModeRadioDesc {
+  font-size: 0.8rem;
+  color: #8888aa;
+}
+
+.companySelector {
+  margin-top: 1rem;
+
+  .label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #a0a8d0;
+  }
+}
+
+.workModeWarning {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.25);
+  border-radius: 8px;
+  color: #ffc107;
+  font-size: 0.9rem;
+}
+
+/* Индикатор режима на странице документов */
+.modeIndicator {
+  display: inline-block;
+  padding: 0.4rem 0.8rem;
+  background: rgba(102, 126, 234, 0.1);
+  border: 1px solid rgba(102, 126, 234, 0.25);
+  border-radius: 6px;
+  color: #8b9cf7;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}

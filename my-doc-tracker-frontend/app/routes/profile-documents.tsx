@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router";
 import { useGetDocumentsQuery, useDeleteDocumentMutation } from "@entities/document";
+import { useGetCurrentUserQuery } from "@entities/user";
 import { useAuth } from "@features/hooks/use-auth";
 import { DocumentModal } from "@shared/ui/DocumentModal";
 import styles from "@app/pages/ProfilePage.module.scss";
@@ -8,19 +9,34 @@ import styles from "@app/pages/ProfilePage.module.scss";
 type SortField = "title" | "expiresAt" | "uploadedAt" | "createdAt";
 type SortOrder = "ASC" | "DESC";
 type StatusFilter = "ALL" | "ACTIVE" | "EXPIRING" | "EXPIRED";
+type DocumentMode = "personal" | "company";
 
 export default function ProfileDocuments() {
   const { user } = useAuth();
+  const { data: currentUser } = useGetCurrentUserQuery();
   const userId = user?.id || 0;
-  
+
+  // Определяем режим из профиля пользователя
+  const workMode = (currentUser?.workMode as DocumentMode) || "personal";
+  const activeCompanyId = currentUser?.activeCompanyId ?? null;
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [sortBy, setSortBy] = useState<SortField>("createdAt");
   const [sortOrder, setSortOrder] = useState<SortOrder>("DESC");
   const [isDocumentModalOpen, setIsDocumentModalOpen] = useState(false);
 
+  // Запрашиваем документы с учётом режима
   const { data: documents = [], isLoading: documentsLoading, refetch } =
-    useGetDocumentsQuery({ limit: 100, offset: 0 }, { skip: !userId });
+    useGetDocumentsQuery(
+      {
+        limit: 100,
+        offset: 0,
+        mode: workMode,
+        companyId: workMode === "company" ? activeCompanyId ?? undefined : undefined,
+      },
+      { skip: !userId }
+    );
 
   const [deleteDocument] = useDeleteDocumentMutation();
 
@@ -94,11 +110,20 @@ export default function ProfileDocuments() {
   return (
     <section className={styles.section}>
       <div className={styles.sectionHeader}>
-        <h2 className={styles.sectionTitle}>Мои документы</h2>
+        <h2 className={styles.sectionTitle}>
+          {workMode === "company" ? "📂 Документы компании" : "📄 Мои документы"}
+        </h2>
         <button onClick={() => setIsDocumentModalOpen(true)} className={styles.addButton}>
           + Добавить документ
         </button>
       </div>
+
+      {/* Индикатор режима */}
+      {workMode === "company" && activeCompanyId && (
+        <div className={styles.modeIndicator}>
+          Корпоративный режим • Компания ID: {activeCompanyId}
+        </div>
+      )}
 
       <DocumentModal
         isOpen={isDocumentModalOpen}
@@ -154,7 +179,11 @@ export default function ProfileDocuments() {
         <p className={styles.loadingText}>Загрузка документов...</p>
       ) : filteredDocuments.length === 0 ? (
         <p className={styles.emptyText}>
-          {documents.length === 0 ? "У вас пока нет документов" : "Документы не найдены"}
+          {documents.length === 0
+            ? workMode === "company"
+              ? "В компании пока нет документов"
+              : "У вас пока нет документов"
+            : "Документы не найдены"}
         </p>
       ) : (
         <div className={styles.documentsGrid}>
@@ -171,6 +200,9 @@ export default function ProfileDocuments() {
                 <p className={styles.docDetail}>Срок действия: {formatDate(doc.expiresAt)}</p>
                 <p className={styles.docDetail}>Размер: {formatFileSize(doc.size)}</p>
                 <p className={styles.docDetail}>Напоминание за {doc.notifyBefore} дн.</p>
+                {doc.isCompanyDocument && (
+                  <p className={styles.docDetail}>🏢 Общий документ компании</p>
+                )}
               </div>
               <div className={styles.docActions}>
                 <Link to={`/documents/${doc.id}`} className={styles.docButton}>

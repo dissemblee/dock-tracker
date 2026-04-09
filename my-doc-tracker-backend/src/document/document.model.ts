@@ -7,15 +7,33 @@ import {
 } from 'sequelize-typescript';
 import { BaseModel } from 'src/shared/base/base.model';
 import { UserModel } from 'src/user/user.model';
+import { CompanyModel } from 'src/company/company.model';
 
 @Table({ tableName: 'document' })
 export class DocumentModel extends BaseModel<DocumentModel> {
+  /** Пользователь, загрузивший документ */
   @ForeignKey(() => UserModel)
   @Column({ allowNull: false })
   declare userId: number;
 
   @BelongsTo(() => UserModel)
   declare user: UserModel;
+
+  /** Компания, к которой принадлежит документ (null для личных) */
+  @ForeignKey(() => CompanyModel)
+  @Column({ allowNull: true })
+  declare companyId: number | null;
+
+  @BelongsTo(() => CompanyModel)
+  declare company: CompanyModel;
+
+  /** Флаг: документ общий для компании или личный */
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  })
+  declare isCompanyDocument: boolean;
 
   @Column({ allowNull: false })
   declare title: string;

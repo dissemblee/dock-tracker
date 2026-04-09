@@ -1,5 +1,6 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { CompanyModel } from './company.model';
+import { CompanyMemberModel } from './company-member.model';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { CompanyController } from './company.controller';
 import { CompanyService } from './company.service';
@@ -8,12 +9,15 @@ import { UsersModule } from 'src/user/user.module';
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([CompanyModel]),
+    SequelizeModule.forFeature([CompanyModel, CompanyMemberModel]),
     forwardRef(() => AuthModule),
     forwardRef(() => UsersModule),
   ],
   controllers: [CompanyController],
   providers: [CompanyService],
-  exports: [CompanyService],
+  exports: [
+    CompanyService,
+    SequelizeModule.forFeature([CompanyModel]),
+  ],
 })
 export class CompanyModule {}

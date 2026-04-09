@@ -1,11 +1,15 @@
 import type { EntityDto, CursorResultDto, ResultDto } from "@shared/types/api";
 
+export type WorkMode = "personal" | "company";
+
 export interface UserDto extends EntityDto {
   id: number;
   name: string;
   email: string;
   role: string;
   companyId?: number | null;
+  workMode?: WorkMode;
+  activeCompanyId?: number | null;
 }
 
 export interface UserUpdateDto {
@@ -18,6 +22,11 @@ export interface UserUpdateDto {
 export interface UserChangePasswordDto {
   currentPassword: string;
   newPassword: string;
+}
+
+export interface UpdateWorkModeDto {
+  workMode: WorkMode;
+  activeCompanyId?: number | null;
 }
 
 export interface UserCursorResultDto extends CursorResultDto<UserDto> {}

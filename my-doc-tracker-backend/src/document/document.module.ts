@@ -5,12 +5,14 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { DocumentModel } from './document.model';
 import { AuthModule } from 'src/auth/auth.module';
 import { CompanyModule } from 'src/company/company.module';
+import { CompanyModel } from 'src/company/company.model';
+import { CompanyMemberModel } from 'src/company/company-member.model';
 import { S3Module } from 'src/shared/s3/s3.module';
 import { UsersModule } from 'src/user/user.module';
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([DocumentModel]),
+    SequelizeModule.forFeature([DocumentModel, CompanyModel, CompanyMemberModel]),
     forwardRef(() => AuthModule),
     CompanyModule,
     S3Module,

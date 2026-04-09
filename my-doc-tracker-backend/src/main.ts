@@ -11,11 +11,12 @@ async function bootstrap() {
 
   await seedService.createAdmin();
 
-  // Глобальная валидация DTO
+  // Глобальная валидация DTO (только для входящих запросов)
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
-      whitelist: true,
+      whitelist: false, // Отключаем whitelist — он удаляет свойства Sequelize-моделей
+      forbidNonWhitelisted: false,
       transformOptions: {
         enableImplicitConversion: true,
       },

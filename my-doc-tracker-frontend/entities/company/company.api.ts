@@ -7,6 +7,8 @@ import type {
   CompanyMembersResultDto,
   InviteMemberDto,
   SearchUserResultDto,
+  CompanyMemberDto,
+  CompanyFullDto,
 } from "./company.dto";
 import type { UserResultDto } from "@entities/user";
 
@@ -23,13 +25,49 @@ export const companyApi = baseApi.injectEndpoints({
         result ? [{ type: "Company", id: result.id }] : [{ type: "Company", id: "LIST" }],
     }),
 
+    /** Получить компании, в которых состоит пользователь */
+    getMyCompanies: builder.query<CompanyDto[], void>({
+      query: () => ({
+        url: `${ENDPOINT}/my`,
+        method: "GET",
+      }),
+      providesTags: [{ type: "Company", id: "MY_LIST" }],
+    }),
+
+    /** Получить компанию с участниками (старый эндпоинт) */
+    getCompanyWithMembers: builder.query<CompanyFullDto, number>({
+      query: (companyId) => ({
+        url: `${ENDPOINT}/${companyId}/members`,
+        method: "GET",
+      }),
+      providesTags: (_result, _error, companyId) => [
+        { type: "Company", id: companyId },
+        { type: "CompanyMembers", id: "LIST" },
+      ],
+    }),
+
+    /** Получить список сотрудников (через company_members) */
+    getCompanyEmployees: builder.query<CompanyMemberDto[], number>({
+      query: (companyId) => ({
+        url: `${ENDPOINT}/${companyId}/employees`,
+        method: "GET",
+      }),
+      providesTags: (_result, _error, companyId) => [
+        { type: "CompanyMembers", id: companyId },
+        { type: "CompanyMembers", id: "LIST" },
+      ],
+    }),
+
     createCompany: builder.mutation<CompanyDto, CompanyCreateDto>({
       query: (data) => ({
         url: `${ENDPOINT}/create`,
         method: "POST",
         body: data,
       }),
-      invalidatesTags: [{ type: "Company", id: "LIST" }],
+      invalidatesTags: [
+        { type: "Company", id: "LIST" },
+        { type: "Company", id: "MY_LIST" },
+      ],
     }),
 
     updateCompany: builder.mutation<CompanyDto, CompanyUpdateDto>({
@@ -39,7 +77,12 @@ export const companyApi = baseApi.injectEndpoints({
         body: data,
       }),
       invalidatesTags: (result) =>
-        result ? [{ type: "Company", id: result.id }, { type: "Company", id: "LIST" }] : [{ type: "Company", id: "LIST" }],
+        result
+          ? [
+              { type: "Company", id: result.id },
+              { type: "Company", id: "LIST" },
+            ]
+          : [{ type: "Company", id: "LIST" }],
     }),
 
     getCompanyMembers: builder.query<CompanyMembersResultDto, number>({
@@ -60,7 +103,7 @@ export const companyApi = baseApi.injectEndpoints({
     }),
 
     inviteMember: builder.mutation<
-      { message: string; user: UserResultDto },
+      { message: string; user?: UserResultDto },
       { companyId: number; data: InviteMemberDto }
     >({
       query: ({ companyId, data }) => ({
@@ -70,6 +113,7 @@ export const companyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, { companyId }) => [
         { type: "CompanyMembers", id: "LIST" },
+        { type: "CompanyMembers", id: companyId },
         { type: "Company", id: companyId },
       ],
     }),
@@ -84,7 +128,34 @@ export const companyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, { companyId }) => [
         { type: "CompanyMembers", id: "LIST" },
+        { type: "CompanyMembers", id: companyId },
         { type: "Company", id: companyId },
+      ],
+    }),
+
+    /** Покинуть компанию */
+    leaveCompany: builder.mutation<{ message: string }, void>({
+      query: () => ({
+        url: `${ENDPOINT}/leave`,
+        method: "POST",
+      }),
+      invalidatesTags: [
+        { type: "Company", id: "LIST" },
+        { type: "Company", id: "MY_LIST" },
+        { type: "CompanyMembers", id: "LIST" },
+      ],
+    }),
+
+    /** Принять приглашение */
+    acceptInvite: builder.mutation<CompanyMemberDto, number>({
+      query: (companyId) => ({
+        url: `${ENDPOINT}/${companyId}/accept-invite`,
+        method: "POST",
+      }),
+      invalidatesTags: [
+        { type: "Company", id: "LIST" },
+        { type: "Company", id: "MY_LIST" },
+        { type: "CompanyMembers", id: "LIST" },
       ],
     }),
 
@@ -110,11 +181,16 @@ export const companyApi = baseApi.injectEndpoints({
 
 export const {
   useGetCurrentCompanyQuery,
+  useGetMyCompaniesQuery,
+  useGetCompanyWithMembersQuery,
+  useGetCompanyEmployeesQuery,
   useCreateCompanyMutation,
   useUpdateCompanyMutation,
   useGetCompanyMembersQuery,
   useInviteMemberMutation,
   useRemoveMemberMutation,
+  useLeaveCompanyMutation,
+  useAcceptInviteMutation,
   useSearchUserByEmailQuery,
   useLazySearchUserByEmailQuery,
 } = companyApi;
