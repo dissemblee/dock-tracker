@@ -1,3 +1,4 @@
+// routes/profile-layout.tsx
 import { Outlet, useLocation, Link, Navigate, useNavigate } from "react-router";
 import { useAuth } from "@features/hooks/use-auth";
 import { useGetCurrentCompanyQuery } from "@entities/company";
@@ -18,7 +19,6 @@ export default function ProfileLayout() {
     return <Navigate to="/" replace />;
   }
 
-  // Определяем активную вкладку по URL
   const path = location.pathname;
   const activeTab = path.includes("/password")
     ? "password"
@@ -38,7 +38,7 @@ export default function ProfileLayout() {
           <div className={styles.userInfo}>
             <span className={styles.userName}>{user?.name || "Пользователь"}</span>
             {currentCompany && (
-              <Link to="/company" className={styles.companyLink}>
+              <Link to="/profile/company" className={styles.companyLink}>
                 {currentCompany.name}
               </Link>
             )}
@@ -76,7 +76,7 @@ export default function ProfileLayout() {
             Смена пароля
           </Link>
           <Link
-            to="/company"
+            to="/profile/company"
             className={`${styles.tab} ${activeTab === "company" ? styles.tabActive : ""}`}
           >
             Компания

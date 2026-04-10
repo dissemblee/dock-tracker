@@ -12,21 +12,19 @@ export class AuthController {
   async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
     const { accessToken, user } = await this.authService.login(dto);
 
-    // Устанавливаем cookie
     res.cookie('jwt', accessToken, {
-      httpOnly: false, // Разрешаем чтение из JS (для dev)
-      secure: false, // Отключаем для HTTP (в production нужен HTTPS)
-      maxAge: 900000, // 15 минут
+      httpOnly: false,
+      secure: false,
+      maxAge: 900000,
       sameSite: 'lax',
       path: '/',
     });
 
-    // В development возвращаем токен также в JSON для отладки
     if (process.env.NODE_ENV !== 'production') {
       return {
         message: 'Успешный вход',
         user,
-        accessToken, // Только для dev!
+        accessToken, 
       };
     }
 
@@ -40,21 +38,19 @@ export class AuthController {
   ) {
     const { accessToken, user } = await this.authService.register(dto);
 
-    // Устанавливаем cookie
     res.cookie('jwt', accessToken, {
-      httpOnly: false, // Разрешаем чтение из JS (для dev)
-      secure: false, // Отключаем для HTTP (в production нужен HTTPS)
-      maxAge: 900000, // 15 минут
+      httpOnly: false, 
+      secure: false,
+      maxAge: 900000,
       sameSite: 'lax',
       path: '/',
     });
 
-    // В development возвращаем токен также в JSON для отладки
     if (process.env.NODE_ENV !== 'production') {
       return {
         message: 'Регистрация успешна',
         user,
-        accessToken, // Только для dev!
+        accessToken, 
       };
     }
 

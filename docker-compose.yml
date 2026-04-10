@@ -86,7 +86,7 @@ services:
       DB_USERNAME: postgres
       DB_PASSWORD: password
       DB_NAME: nest_db
-      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      JWT_SECRET: secretKey
       PORT: 3000
       CORS_ORIGIN: http://localhost:5173
       NODE_ENV: development
@@ -94,6 +94,9 @@ services:
       S3_EXTERNAL_URL: http://localhost:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
+    volumes:
+      - ./my-doc-tracker-backend:/app
+      - /app/node_modules  # Этот том должен быть указан, но без локального пути
     ports:
       - "3000:3000"
     networks:

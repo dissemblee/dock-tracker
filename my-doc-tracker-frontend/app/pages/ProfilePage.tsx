@@ -565,7 +565,7 @@ export function ProfilePage() {
                       </p>
                     </div>
                     <div className={styles.docActions}>
-                      <Link to={`/documents/${doc.id}`} className={styles.docButton}>
+                      <Link to={`/profile/documents/${doc.id}`} className={styles.docButton}>
                         Просмотр
                       </Link>
                       <button

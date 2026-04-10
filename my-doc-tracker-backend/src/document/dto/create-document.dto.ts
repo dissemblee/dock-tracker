@@ -5,6 +5,7 @@ import {
   MinLength,
   MaxLength,
   IsISO8601,
+  IsBoolean,
 } from 'class-validator';
 
 export class CreateDocumentDto {
@@ -22,4 +23,8 @@ export class CreateDocumentDto {
   @IsNotEmpty({ message: 'Количество дней уведомления обязательно' })
   @IsNumber({}, { message: 'Количество дней уведомления должно быть числом' })
   notifyBefore: number;
+
+  @IsNotEmpty({ message: 'Флаг корпоративного документа обязателен' })
+  @IsBoolean({ message: 'Флаг корпоративного документа должен быть булевым значением' })
+  isCompanyDocument: boolean;
 }

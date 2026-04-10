@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
 import {
   useGetCurrentCompanyQuery,
   useGetMyCompaniesQuery,
@@ -14,19 +13,13 @@ import { useGetCurrentUserQuery } from "@entities/user";
 import type { CompanyCreateDto, CompanyUpdateDto, CompanyMemberDto, CompanyDto } from "@entities/company";
 import styles from "./CompanyPage.module.scss";
 
-interface CompanyPageProps {
-  companyId?: number | null;
-  onBack?: () => void;
-}
-
 type TabType = "members" | "settings" | "create";
 
-export function CompanyPage({ companyId: propCompanyId, onBack }: CompanyPageProps) {
+export function CompanyPage() {
   const { data: currentUser, isLoading: userLoading } = useGetCurrentUserQuery();
   const { data: currentCompany, isLoading: companyLoading } = useGetCurrentCompanyQuery();
   const { data: myCompanies = [] } = useGetMyCompaniesQuery();
   const [createCompany] = useCreateCompanyMutation();
-  const navigate = useNavigate();
   const [updateCompany] = useUpdateCompanyMutation();
   const [inviteMember] = useInviteMemberMutation();
   const [removeMember] = useRemoveMemberMutation();
@@ -53,29 +46,16 @@ export function CompanyPage({ companyId: propCompanyId, onBack }: CompanyPagePro
 
   const [settingsForm, setSettingsForm] = useState<CompanyUpdateDto>({});
 
-  // Определяем активную компанию
-  const selectedCompany = propCompanyId
-    ? myCompanies.find((c) => c.id === propCompanyId) || currentCompany || null
-    : currentCompany;
-  const effectiveCompanyId = propCompanyId || currentCompany?.id;
+  const selectedCompany = currentCompany;
+  const effectiveCompanyId = currentCompany?.id;
 
-  // Используем новый эндпоинт — сотрудники через company_members
   const { data: members, isLoading: membersLoading } = useGetCompanyEmployeesQuery(effectiveCompanyId!, {
     skip: !effectiveCompanyId,
   });
 
-  // Определяем роль текущего пользователя
   const currentMember = members?.find((m) => m.userId === currentUser?.id);
   const isOwner = currentMember?.role === "owner";
   const isAdmin = isOwner || currentMember?.role === "admin" || currentUser?.role === "ADMIN";
-
-  // Если передан companyId но у пользователя нет этой компании — редирект
-  useEffect(() => {
-    if (propCompanyId && !selectedCompany) {
-      alert("У вас нет доступа к этой компании");
-      onBack?.();
-    }
-  }, [propCompanyId, selectedCompany, onBack]);
 
   const handleCreateCompany = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,8 +73,6 @@ export function CompanyPage({ companyId: propCompanyId, onBack }: CompanyPagePro
       await createCompany(dto).unwrap();
       alert("Компания успешно создана!");
       setCompanyForm({ name: "", inn: "", ogrn: "", address: "", phone: "", email: "", website: "" });
-      onBack?.();
-      window.location.reload();
     } catch (err) {
       console.error("Ошибка при создании:", err);
       alert("Ошибка при создании компании");
@@ -108,7 +86,6 @@ export function CompanyPage({ companyId: propCompanyId, onBack }: CompanyPagePro
       await updateCompany({ ...settingsForm, id: selectedCompany.id }).unwrap();
       alert("Данные компании обновлены!");
       setSettingsForm({});
-      window.location.reload();
     } catch (err) {
       console.error("Ошибка при обновлении:", err);
       alert("Ошибка при обновлении");
@@ -188,12 +165,6 @@ export function CompanyPage({ companyId: propCompanyId, onBack }: CompanyPagePro
 
   return (
     <div className={styles.companyPage}>
-      {onBack && (
-        <button onClick={onBack} className={styles.backButton}>
-          ← Назад к списку
-        </button>
-      )}
-
       <div className={styles.container}>
         <h1 className={styles.title}>Компания</h1>
 

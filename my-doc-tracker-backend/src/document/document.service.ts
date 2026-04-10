@@ -20,6 +20,7 @@ import { UpdateDocumentDto } from './dto/update-document.dto';
 import { DocumentQueryDto } from './dto/document-query.dto';
 import { UserModel, WorkMode } from 'src/user/user.model';
 import { CompanyMemberModel } from 'src/company/company-member.model';
+import { JwtUserPayload } from './document.controller';
 
 interface UploadedFile {
   fieldname: string;
@@ -78,6 +79,24 @@ export class DocumentService {
     return doc;
   }
 
+  private async assertAccess(documentId: number, user: JwtUserPayload) {
+    const doc = await this.documentModel.findByPk(documentId);
+
+    if (!doc) {
+      throw new NotFoundException('Документ не найден');
+    }
+
+    const isOwner = doc.userId === user.id;
+    const sameCompany = doc.companyId === user.companyId;
+    const isAdmin = ['ADMIN', 'OWNER'].includes(user.role);
+
+    if (!isOwner && !(sameCompany && isAdmin)) {
+      throw new ForbiddenException('Нет доступа');
+    }
+
+    return doc;
+  }
+
   /**
    * Проверить, что пользователь имеет доступ к документам компании
    */
@@ -111,7 +130,6 @@ export class DocumentService {
     dto: CreateDocumentDto,
     file: UploadedFile,
     userId: number,
-    workMode?: WorkMode,
     activeCompanyId?: number | null,
   ) {
     const user = await this.userService.findOne(userId);
@@ -120,8 +138,10 @@ export class DocumentService {
     const detected = await this.validateFile(file);
     const key = buildKey(userId, detected.ext);
 
-    // Определяем, к какому контексту относится документ
-    const isCompanyDoc = workMode === WorkMode.COMPANY && !!activeCompanyId;
+    const companyId =
+      dto.isCompanyDocument
+        ? user.activeCompanyId ?? user.companyId ?? null
+        : null;
 
     let uploaded = false;
 
@@ -133,8 +153,8 @@ export class DocumentService {
         const doc = await this.documentModel.create(
           {
             userId,
-            companyId: isCompanyDoc ? activeCompanyId : null,
-            isCompanyDocument: isCompanyDoc,
+            companyId: companyId,
+            isCompanyDocument: dto.isCompanyDocument,
             title: dto.title,
             expiresAt: new Date(dto.expiresAt),
             notifyBefore: dto.notifyBefore,
@@ -181,7 +201,6 @@ export class DocumentService {
       sortOrder = 'DESC',
       status,
       search,
-      mode = 'personal',
       companyId,
       ownerId,
       isCompanyDocument,
@@ -189,23 +208,18 @@ export class DocumentService {
 
     const where: WhereOptions<DocumentModel> = {};
 
-    if (mode === 'company' && companyId) {
-      // Корпоративный режим: фильтрация по companyId
-      where.companyId = companyId;
+    where[Op.or] = [
+      { userId },
+      ...(companyId ? [{ companyId }] : []),
+    ];
 
-      if (ownerId) {
-        // Фильтр по конкретному сотруднику
-        where.userId = ownerId;
-      }
+    if (ownerId) {
+      where.userId = ownerId;
+      delete where[Op.or];
+    }
 
-      if (isCompanyDocument !== undefined) {
-        where.isCompanyDocument = isCompanyDocument;
-      }
-    } else {
-      // Личный режим: только документы пользователя
-      where.userId = userId;
-      where.companyId = { [Op.or]: [null, { [Op.ne]: null }] };
-      where.isCompanyDocument = { [Op.ne]: true };
+    if (isCompanyDocument !== undefined) {
+      where.isCompanyDocument = isCompanyDocument;
     }
 
     if (search) {
@@ -402,8 +416,12 @@ export class DocumentService {
     return { url };
   }
 
-  async getImageFile(documentId: number, userId: number): Promise<{ buffer: Buffer; contentType: string }> {
-    const doc = await this.assertOwner(documentId, userId);
+  async getImageFile(
+    documentId: number,
+    user: JwtUserPayload,
+  ): Promise<{ buffer: Buffer; contentType: string }> {
+
+    const doc = await this.assertAccess(documentId, user);
 
     const isImage = doc.mimeType.startsWith('image/');
     if (!isImage) {

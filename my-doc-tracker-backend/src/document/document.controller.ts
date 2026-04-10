@@ -13,6 +13,8 @@ import {
   ParseIntPipe,
   Req,
   Res,
+  BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/shared/jwt/jwt-auth.guard';
@@ -31,7 +33,7 @@ interface MulterFile {
   buffer: Buffer;
 }
 
-interface JwtUserPayload {
+export interface JwtUserPayload {
   id: number;
   email: string;
   role: string;
@@ -50,6 +52,7 @@ function getUser(req: Request): JwtUserPayload {
 @UseGuards(JwtAuthGuard)
 export class DocumentController {
   constructor(private readonly documentService: DocumentService) {}
+  private readonly logger = new Logger(DocumentController.name);
 
   @Post()
   @UseInterceptors(FileInterceptor('file'))
@@ -60,16 +63,14 @@ export class DocumentController {
   ) {
     const user = getUser(req);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const workMode = (req as any).user?.workMode as string | undefined;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const activeCompanyId = (req as any).user?.activeCompanyId as number | undefined;
+    const activeCompanyId = user.activeCompanyId ?? null;
 
     return await this.documentService.create(
       createDocumentDto,
       file,
       user.id,
-      workMode as any,
-      activeCompanyId ?? null,
+      activeCompanyId
     );
   }
 
@@ -79,17 +80,6 @@ export class DocumentController {
     @Req() req: Request,
   ) {
     const user = getUser(req);
-
-    // Если mode не указан — определяем из профиля пользователя
-    if (!query.mode) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      const userWorkMode = (req as any).user?.workMode as string | undefined;
-      if (userWorkMode === 'company') {
-        query.mode = 'company';
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        query.companyId = (req as any).user?.activeCompanyId as number | undefined;
-      }
-    }
 
     return await this.documentService.list(user.id, query);
   }
@@ -111,15 +101,6 @@ export class DocumentController {
     );
   }
 
-  @Get(':id')
-  async findOne(
-    @Param('id', ParseIntPipe) id: number,
-    @Req() req: Request,
-  ) {
-    const user = getUser(req);
-    return await this.documentService.findOne(id, user.id);
-  }
-
   @Get(':id/image-url')
   async getImageUrl(
     @Param('id', ParseIntPipe) id: number,
@@ -131,12 +112,16 @@ export class DocumentController {
 
   @Get(':id/image')
   async getImage(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Req() req: Request,
     @Res() res: Response,
   ) {
+    const numericId = Number(id);
+    if (Number.isNaN(numericId)) {
+      throw new BadRequestException('Invalid id');
+    }
     const user = getUser(req);
-    const { buffer, contentType } = await this.documentService.getImageFile(id, user.id);
+    const { buffer, contentType } = await this.documentService.getImageFile(numericId, user);
     res.setHeader('Content-Type', contentType);
     res.setHeader('Cache-Control', 'public, max-age=3600');
     res.send(buffer);
@@ -170,6 +155,15 @@ export class DocumentController {
   ) {
     const user = getUser(req);
     return await this.documentService.getDownloadUrl(id, user.id);
+  }
+
+  @Get(':id')
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: Request,
+  ) {
+    const user = getUser(req);
+    return await this.documentService.findOne(id, user.id);
   }
 
   @Delete(':id')

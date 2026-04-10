@@ -32,10 +32,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
   padding: 0;
-  color: var(--foreground);
   background: transparent;
   line-height: 1.5;
   text-rendering: optimizeLegibility;
+  color: white !important;
 }
 
 html, body {

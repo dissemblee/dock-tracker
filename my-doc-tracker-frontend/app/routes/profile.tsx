@@ -14,6 +14,7 @@ interface ReminderFormData {
 export default function ProfileOverview() {
   const { user: authUser } = useAuth();
   const { data: currentUser } = useGetCurrentUserQuery(undefined);
+  
   const [reminderForm, setReminderForm] = useState<ReminderFormData>({
     title: "",
     description: "",

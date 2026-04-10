@@ -1,0 +1,143 @@
+.page {
+  padding: 20px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: white;
+
+}
+
+.loading {
+  padding: 40px;
+}
+
+.empty {
+  padding: 20px;
+  color: #666;
+}
+
+.card {
+  margin-bottom: 20px;
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.docTitle {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.downloadButton {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background: #667eea;
+  color: white;
+  cursor: pointer;
+}
+.content {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 2rem;
+}
+
+.mainInfo {
+  min-width: 0;
+}
+
+.statusRow {
+  margin-bottom: 12px;
+}
+
+.statusBadge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.statusACTIVE {
+  background: #d4edda;
+  color: #155724;
+}
+
+.statusEXPIRING {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.statusEXPIRED {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.infoItem {
+  background: #f8f9fa;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.infoLabel {
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+}
+
+.infoValue {
+  font-size: 14px;
+}
+
+.previewContainer {
+  width: 100%;
+}
+
+.previewImage {
+  width: 100%;
+  border-radius: 12px;
+  object-fit: contain;
+  background: #f8f9fa;
+}
+
+.noPreview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+.noPreviewIcon {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.fileType {
+  font-size: 12px;
+  color: #999;
+  margin-top: 6px;
+}

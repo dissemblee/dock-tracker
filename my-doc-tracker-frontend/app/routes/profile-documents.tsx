@@ -13,27 +13,20 @@ type DocumentMode = "personal" | "company";
 
 export default function ProfileDocuments() {
   const { user } = useAuth();
-  const { data: currentUser } = useGetCurrentUserQuery();
   const userId = user?.id || 0;
-
-  // Определяем режим из профиля пользователя
-  const workMode = (currentUser?.workMode as DocumentMode) || "personal";
-  const activeCompanyId = currentUser?.activeCompanyId ?? null;
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [sortBy, setSortBy] = useState<SortField>("createdAt");
   const [sortOrder, setSortOrder] = useState<SortOrder>("DESC");
   const [isDocumentModalOpen, setIsDocumentModalOpen] = useState(false);
+  const [docScope, setDocScope] = useState<"all" | "personal" | "company">("all");
 
-  // Запрашиваем документы с учётом режима
   const { data: documents = [], isLoading: documentsLoading, refetch } =
     useGetDocumentsQuery(
       {
         limit: 100,
         offset: 0,
-        mode: workMode,
-        companyId: workMode === "company" ? activeCompanyId ?? undefined : undefined,
       },
       { skip: !userId }
     );
@@ -54,6 +47,12 @@ export default function ProfileDocuments() {
       result = result.filter((doc) => doc.status === statusFilter);
     }
 
+    result = result.filter((doc) => {
+      if (docScope === "all") return true;
+      if (docScope === "company") return doc.isCompanyDocument;
+      return !doc.isCompanyDocument;
+    });
+
     result.sort((a, b) => {
       const aVal = a[sortBy];
       const bVal = b[sortBy];
@@ -66,7 +65,7 @@ export default function ProfileDocuments() {
     });
 
     return result;
-  }, [documents, searchTerm, statusFilter, sortBy, sortOrder]);
+  }, [documents, searchTerm, statusFilter, sortBy, sortOrder, docScope]);
 
   const handleDeleteDocument = async (id: number) => {
     if (confirm("Вы уверены, что хотите удалить этот документ?")) {
@@ -111,19 +110,12 @@ export default function ProfileDocuments() {
     <section className={styles.section}>
       <div className={styles.sectionHeader}>
         <h2 className={styles.sectionTitle}>
-          {workMode === "company" ? "📂 Документы компании" : "📄 Мои документы"}
+          Документы
         </h2>
         <button onClick={() => setIsDocumentModalOpen(true)} className={styles.addButton}>
           + Добавить документ
         </button>
       </div>
-
-      {/* Индикатор режима */}
-      {workMode === "company" && activeCompanyId && (
-        <div className={styles.modeIndicator}>
-          Корпоративный режим • Компания ID: {activeCompanyId}
-        </div>
-      )}
 
       <DocumentModal
         isOpen={isDocumentModalOpen}
@@ -154,7 +146,24 @@ export default function ProfileDocuments() {
             </button>
           ))}
         </div>
-
+        <button
+          onClick={() =>
+            setDocScope((prev) =>
+              prev === "all"
+                ? "company"
+                : prev === "company"
+                ? "personal"
+                : "all"
+            )
+          }
+          className={styles.statusButton}
+        >
+          {docScope === "all"
+            ? "Все документы"
+            : docScope === "company"
+            ? "Документы компании"
+            : "Личные документы"}
+        </button>
         <div className={styles.sortControls}>
           <select
             value={sortBy}
@@ -180,9 +189,7 @@ export default function ProfileDocuments() {
       ) : filteredDocuments.length === 0 ? (
         <p className={styles.emptyText}>
           {documents.length === 0
-            ? workMode === "company"
-              ? "В компании пока нет документов"
-              : "У вас пока нет документов"
+              ? "У вас пока нет документов"
             : "Документы не найдены"}
         </p>
       ) : (
@@ -205,7 +212,7 @@ export default function ProfileDocuments() {
                 )}
               </div>
               <div className={styles.docActions}>
-                <Link to={`/documents/${doc.id}`} className={styles.docButton}>
+                <Link to={`/profile/documents/${doc.id}`} className={styles.docButton}>
                   Просмотр
                 </Link>
                 <button

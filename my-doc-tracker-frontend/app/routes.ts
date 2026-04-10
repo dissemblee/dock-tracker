@@ -7,10 +7,10 @@ export default [
     route("documents", "routes/profile-documents.tsx"),
     route("settings", "routes/profile-settings.tsx"),
     route("password", "routes/profile-password.tsx"),
-  ]),
-  route("documents/:id", "routes/document.tsx"),
-  route("company", "routes/companies.tsx", [
-    route("create", "routes/create-company.tsx"),
-    route(":id", "routes/company-detail.tsx"),
+    route("company", "routes/companies.tsx"),
+
+    route("company/:companyId/member/:userId", "routes/member-profile.tsx"),
+
+    route("documents/:id", "routes/document.tsx"),
   ]),
 ] satisfies RouteConfig;

@@ -1,5 +1,5 @@
-import { CompanyPage } from "@app/pages/CompanyPage";
-import type { Route } from "./+types/company";
+import { CompaniesPage } from "~/pages/CompaniesPage/CompaniesPage";
+import type { Route } from "../+types/root";
 
 export function meta() {
   return [
@@ -16,5 +16,5 @@ export function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function Company() {
-  return <CompanyPage />;
+  return <CompaniesPage />;
 }

@@ -1,12 +1,8 @@
-FROM node:20-alpine AS build-env
-COPY . /app/
-WORKDIR /app
-RUN npm ci
-RUN npm run build
-
 FROM node:20-alpine
-COPY ./package.json package-lock.json /app/
 WORKDIR /app
-RUN npm ci --omit=dev
-COPY --from=build-env /app/dist /app/dist
-CMD ["npm", "run", "start:prod"]
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm install -g @nestjs/cli
+EXPOSE 3000
+CMD ["npm", "run", "start:dev"]

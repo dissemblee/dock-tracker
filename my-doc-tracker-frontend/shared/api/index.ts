@@ -31,12 +31,12 @@ interface ApiArgsAxios<TData = any> {
 const axiosInstance = axios.create({
   baseURL: typeof window !== 'undefined'
     ? (import.meta.env.VITE_API_URL || "http://localhost:3000")
-    : (process.env.VITE_API_URL || "http://localhost:3000"),
+    : (process.env.VITE_API_URL || "http://localhost:3  000"),
   withCredentials: true,
   headers: {
     Accept: "application/json",
   },
-})
+});
 
 /**
  * Makes a request to the backend API.
@@ -82,12 +82,6 @@ export const customBaseQuery: BaseQueryFn<
   try {
     const token = tokenStore.get();
 
-    // Отладка в development
-    if (import.meta.env.DEV && !token) {
-      console.warn('[RTK Query] JWT token not found for request:', url);
-    }
-
-    // Для FormData не устанавливаем Content-Type — браузер сам добавит boundary
     const isFormData = body instanceof FormData;
 
     const response = await axiosInstance.request({

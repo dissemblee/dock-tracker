@@ -27,7 +27,6 @@ export function DocumentPage() {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
 
-  // Загружаем изображение напрямую через fetch
   useEffect(() => {
     if (!documentId || !documentData?.mimeType.startsWith("image/")) {
       setImageSrc(null);

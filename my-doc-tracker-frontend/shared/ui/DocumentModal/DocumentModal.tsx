@@ -14,6 +14,7 @@ interface FormData {
   expiresAt: string;
   notifyBefore: number;
   file: File | null;
+  isCompanyDocument: boolean;
 }
 
 const DEFAULT_FORM_DATA: FormData = {
@@ -21,6 +22,7 @@ const DEFAULT_FORM_DATA: FormData = {
   expiresAt: "",
   notifyBefore: 7,
   file: null,
+  isCompanyDocument: false,
 };
 
 const ALLOWED_FILE_TYPES = ["application/pdf", "image/png", "image/jpeg", "image/jpg"];
@@ -82,6 +84,7 @@ export function DocumentModal({ isOpen, onClose, onSuccess }: DocumentModalProps
       data.append("expiresAt", new Date(formData.expiresAt).toISOString());
       data.append("notifyBefore", formData.notifyBefore.toString());
       data.append("file", formData.file);
+      data.append("isCompanyDocument", String(formData.isCompanyDocument));
 
       await createDocument({ data }).unwrap();
 
@@ -137,6 +140,17 @@ export function DocumentModal({ isOpen, onClose, onSuccess }: DocumentModalProps
 
   if (!isOpen) return null;
   if (typeof document === "undefined") return null;
+
+  const handleIsCompanyDocumentChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const value = e.target.value === "true";
+
+    setFormData((prev) => ({
+      ...prev,
+      isCompanyDocument: value,
+    }));
+  };
 
   return createPortal(
     <div className={styles.modalOverlay} onClick={onClose}>
@@ -207,6 +221,26 @@ export function DocumentModal({ isOpen, onClose, onSuccess }: DocumentModalProps
               <option value={60}>60 дней</option>
               <option value={90}>90 дней</option>
             </select>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="isCompanyDocument" className={styles.label}>
+              Документ компании?
+            </label>
+
+            <select
+              id="isCompanyDocument"
+              value={String(formData.isCompanyDocument)}
+              onChange={handleIsCompanyDocumentChange}
+              className={styles.select}
+            >
+              <option value="false">Личный документ</option>
+              <option value="true">Документ компании</option>
+            </select>
+
+            <div className={styles.hint}>
+              Документы компании видны администраторам и владельцу
+            </div>
           </div>
 
           <div className={styles.formGroup}>
